@@ -28,7 +28,7 @@
     "changeset:version": "changeset version",
     "changeset:publish": "pnpm build && changeset publish",
     "release": "pnpm changeset:publish",
-    "publish": "node scripts/publish.js",
+    "publish:packages": "node scripts/publish.js",
     "publish:bash": "bash scripts/publish.sh",
     "clean": "pnpm -r run clean && rm -rf node_modules",
     "reset": "pnpm clean && pnpm install"

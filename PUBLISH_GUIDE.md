@@ -13,7 +13,7 @@ This guide explains how to publish the @oxog/i18n packages to npm.
 
 ### Option 1: Cross-platform Node.js Script (Recommended)
 ```bash
-pnpm publish
+pnpm run publish:packages
 ```
 
 ### Option 2: Bash Script (Unix/Linux/macOS)
