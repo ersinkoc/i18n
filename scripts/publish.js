@@ -92,6 +92,13 @@ async function main() {
       process.exit(1);
     }
 
+    // Check if trying to publish root package (should not happen)
+    const rootPackageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    if (rootPackageJson.private && process.argv.includes('--root')) {
+      printError('Cannot publish private monorepo root package');
+      process.exit(1);
+    }
+
     // Check if user is logged in to npm
     printInfo('Checking npm authentication...');
     const npmUser = execCommand('npm whoami', { silent: true, allowFailure: true });
