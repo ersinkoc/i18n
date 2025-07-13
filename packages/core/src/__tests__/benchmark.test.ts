@@ -193,7 +193,12 @@ describe('Benchmarks vs Competitors', () => {
     };
 
     // Create large translation set
-    for (let locale = 0; locale < 10; locale++) {
+    largeConfig.messages['en'] = {};
+    for (let key = 0; key < 1000; key++) {
+      largeConfig.messages['en'][`key${key}`] = `Value ${key} in en`;
+    }
+    
+    for (let locale = 1; locale < 10; locale++) {
       const localeName = `lang${locale}`;
       largeConfig.messages[localeName] = {};
       for (let key = 0; key < 1000; key++) {

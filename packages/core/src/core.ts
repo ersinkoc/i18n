@@ -55,11 +55,16 @@ export function createI18n<TMessages extends Messages = Messages>(
   
   formatters.set('currency', (value, format) => {
     if (typeof value !== 'number') return String(value);
-    const [, currency = 'USD'] = (format || '').split(':');
-    return new Intl.NumberFormat(currentLocale, {
-      style: 'currency',
-      currency,
-    }).format(value);
+    const parts = (format || 'currency:USD').split(':');
+    const currency = parts.length > 1 ? parts[1] || 'USD' : 'USD';
+    try {
+      return new Intl.NumberFormat(currentLocale, {
+        style: 'currency',
+        currency,
+      }).format(value);
+    } catch (error) {
+      return `${currency} ${value}`;
+    }
   });
   
   // Register plugin formatters
@@ -137,10 +142,8 @@ export function createI18n<TMessages extends Messages = Messages>(
         }
       }
       
-      // Interpolate parameters
-      if (params) {
-        result = interpolate(result, params, formatters);
-      }
+      // Always interpolate to handle empty parameters 
+      result = interpolate(result, params || {}, formatters);
       
       translationCache.set(cacheKey, result);
       return result;

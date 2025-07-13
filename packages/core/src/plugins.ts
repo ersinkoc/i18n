@@ -9,7 +9,8 @@ export const markdownPlugin: I18nPlugin = {
     return value
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`(.*?)`/g, '<code>$1</code>');
+      .replace(/`(.*?)`/g, '<code>$1</code>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
   },
 };
 
@@ -28,13 +29,13 @@ export const icuPlugin: I18nPlugin = {
       if (pluralMatch) {
         const rules = pluralMatch[1];
         
-        // Parse rules
-        const exactMatch = rules.match(new RegExp(`=0\\s*\\{([^}]+)\\}`));
-        const oneMatch = rules.match(/one\s*\{([^}]+)\}/);
+        // Parse rules - handle both =1 and one forms
+        const zeroMatch = rules.match(/=0\s*\{([^}]+)\}/);
+        const oneMatch = rules.match(/=1\s*\{([^}]+)\}/) || rules.match(/one\s*\{([^}]+)\}/);
         const otherMatch = rules.match(/other\s*\{([^}]+)\}/);
         
-        if (count === 0 && exactMatch) {
-          return exactMatch[1];
+        if (count === 0 && zeroMatch) {
+          return zeroMatch[1];
         } else if (count === 1 && oneMatch) {
           return oneMatch[1];
         } else if (otherMatch) {
