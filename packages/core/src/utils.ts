@@ -18,7 +18,7 @@ export function interpolate(
           if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
             console.warn(`[i18n] Missing translation parameter: ${paramKey}`);
           }
-          return ''; // Return empty string for missing parameters
+          return match; // Return original placeholder for missing parameters
         }
         
         const value = params[paramKey];

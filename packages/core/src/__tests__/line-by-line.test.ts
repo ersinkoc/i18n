@@ -876,7 +876,7 @@ describe('Line-by-Line Test Coverage - Core Package', () => {
       });
       
       expect(i18n.t('test', { name: 'World' })).toBe('Hello World!');
-      expect(i18n.t('test')).toBe('Hello !'); // No params
+      expect(i18n.t('test')).toBe('Hello {{name}}!'); // No params
     });
 
     // Line 133: return translate(String(key), params);
