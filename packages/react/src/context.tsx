@@ -5,7 +5,7 @@ export interface I18nContextValue<TMessages extends Messages = Messages> {
   i18n: I18nInstance<TMessages>;
 }
 
-export const I18nContext = createContext<I18nContextValue | null>(null);
+export const I18nContext = createContext<I18nContextValue<any> | null>(null);
 
 export interface I18nProviderProps<TMessages extends Messages = Messages> {
   i18n: I18nInstance<TMessages>;
@@ -20,8 +20,10 @@ export function I18nProvider<TMessages extends Messages = Messages>({
     throw new Error('[i18n] I18nProvider requires a valid i18n instance');
   }
   
+  const value: I18nContextValue<any> = { i18n };
+  
   return (
-    <I18nContext.Provider value={{ i18n }}>
+    <I18nContext.Provider value={value}>
       {children}
     </I18nContext.Provider>
   );

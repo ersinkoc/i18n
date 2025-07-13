@@ -84,7 +84,7 @@ export function i18nPlugin(options: I18nPluginOptions = {}): Plugin {
       }
     },
     
-    generateBundle(options, bundle) {
+    generateBundle(_options, bundle) {
       if (!isProduction || !optimize) return;
       
       optimizeBundle(bundle, {

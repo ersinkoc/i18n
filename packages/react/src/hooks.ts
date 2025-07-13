@@ -1,4 +1,4 @@
-import type { ExtractTranslationKeys, ExtractTranslationParams, Messages, TranslationFunction } from '@oxog/i18n';
+import type { ExtractTranslationKeys, Messages, TranslationFunction } from '@oxog/i18n';
 import { useCallback, useMemo } from 'react';
 import { useI18n } from './context';
 

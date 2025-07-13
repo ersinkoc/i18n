@@ -10,10 +10,9 @@ interface InitOptions {
 }
 
 export async function init(options: InitOptions) {
-  try {
-    console.log(colors.blue('\n🌍 Initializing @oxog/i18n\n'));
-    
-    const prompts = createPrompts();
+  console.log(colors.blue('\n🌍 Initializing @oxog/i18n\n'));
+  
+  const prompts = createPrompts();
   
   let framework = options.framework;
   if (!framework) {
@@ -99,9 +98,9 @@ export async function init(options: InitOptions) {
     
     // Create types file if TypeScript
     if (config.typescript) {
+      await fs.mkdir(path.join('./src/types'), { recursive: true });
       const typesContent = generateTypes();
       await fs.writeFile(path.join('./src/types', 'i18n.d.ts'), typesContent);
-      await fs.mkdir(path.join('./src/types'), { recursive: true });
     }
     
     spinner.succeed('Setup complete!');
@@ -122,7 +121,6 @@ export async function init(options: InitOptions) {
     console.error(error);
     process.exit(1);
   }
-}
 
 function generateTypeScriptConfig(config: any): string {
   const framework = config.framework;
@@ -182,4 +180,5 @@ declare module '@oxog/i18n' {
   interface CustomMessages extends Messages {}
 }
 `;
+}
 }

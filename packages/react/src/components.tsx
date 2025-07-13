@@ -26,7 +26,7 @@ export function T<
   }
   
   try {
-    const translatedText = t(id, ...(values ? [values as any] : []));
+    const translatedText = values ? (t as any)(id, values) : (t as any)(id);
     
     return (
       <Component className={className} {...props}>
@@ -62,7 +62,7 @@ export function Trans<
 >({ id, values, components = {}, as: Component = 'span', className, ...props }: TransProps<TMessages, TKey>) {
   const { t } = useTranslation<TMessages>();
   
-  const translation = t(id, ...(values ? [values as any] : []));
+  const translation = values ? (t as any)(id, values) : (t as any)(id);
   
   // Parse the translation and replace component placeholders
   function parseTranslation(text: string): React.ReactNode[] {
@@ -135,7 +135,7 @@ export function NumberFormat({ value, format, as: Component = 'span', className,
     }
     return (
       <Component className={className} {...props}>
-        {value instanceof Date ? value.toLocaleDateString() : String(value)}
+        {String(value)}
       </Component>
     );
   }
@@ -152,14 +152,14 @@ export function NumberFormat({ value, format, as: Component = 'span', className,
     }
     return (
       <Component className={className} {...props}>
-        {value instanceof Date ? value.toLocaleDateString() : String(value)}
+        {String(value)}
       </Component>
     );
   }
 }
 
 export interface DateFormatProps {
-  value: Date;
+  value: Date | any;
   format?: string;
   as?: keyof JSX.IntrinsicElements;
   className?: string;
@@ -168,13 +168,13 @@ export interface DateFormatProps {
 export function DateFormat({ value, format, as: Component = 'span', className, ...props }: DateFormatProps) {
   const { formatDate } = useTranslation();
   
-  if (!(value instanceof Date) || isNaN(value.getTime())) {
+  if (!(value instanceof Date) || isNaN((value as Date).getTime())) {
     if (process.env.NODE_ENV !== 'production') {
       console.error('[i18n] DateFormat component requires a valid Date object');
     }
     return (
       <Component className={className} {...props}>
-        {value instanceof Date ? value.toLocaleDateString() : String(value)}
+        {String(value)}
       </Component>
     );
   }
@@ -191,15 +191,15 @@ export function DateFormat({ value, format, as: Component = 'span', className, .
     }
     return (
       <Component className={className} {...props}>
-        {value instanceof Date ? value.toLocaleDateString() : String(value)}
+        {String(value)}
       </Component>
     );
   }
 }
 
 export interface RelativeTimeProps {
-  value: Date;
-  baseDate?: Date;
+  value: Date | any;
+  baseDate?: Date | any;
   as?: keyof JSX.IntrinsicElements;
   className?: string;
 }
@@ -207,24 +207,24 @@ export interface RelativeTimeProps {
 export function RelativeTime({ value, baseDate, as: Component = 'span', className, ...props }: RelativeTimeProps) {
   const { formatRelativeTime } = useTranslation();
   
-  if (!(value instanceof Date) || isNaN(value.getTime())) {
+  if (!(value instanceof Date) || isNaN((value as Date).getTime())) {
     if (process.env.NODE_ENV !== 'production') {
       console.error('[i18n] RelativeTime component requires a valid Date object for value');
     }
     return (
       <Component className={className} {...props}>
-        {value instanceof Date ? value.toLocaleDateString() : String(value)}
+        {String(value)}
       </Component>
     );
   }
   
-  if (baseDate !== undefined && (!(baseDate instanceof Date) || isNaN(baseDate.getTime()))) {
+  if (baseDate !== undefined && (!(baseDate instanceof Date) || isNaN((baseDate as Date).getTime()))) {
     if (process.env.NODE_ENV !== 'production') {
       console.error('[i18n] RelativeTime component requires a valid Date object for baseDate');
     }
     return (
       <Component className={className} {...props}>
-        {value instanceof Date ? value.toLocaleDateString() : String(value)}
+        {String(value)}
       </Component>
     );
   }
@@ -241,7 +241,7 @@ export function RelativeTime({ value, baseDate, as: Component = 'span', classNam
     }
     return (
       <Component className={className} {...props}>
-        {value instanceof Date ? value.toLocaleDateString() : String(value)}
+        {String(value)}
       </Component>
     );
   }
