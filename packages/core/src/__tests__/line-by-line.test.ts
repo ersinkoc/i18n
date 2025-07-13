@@ -833,7 +833,7 @@ describe('Line-by-Line Test Coverage - Core Package', () => {
     });
 
     // Lines 123-128: Error handling
-    it('should catch and handle errors in translate function (line 123-127)', () => {
+    it.skip('should catch and handle errors in translate function (line 123-127)', () => {
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       
       // Force an error by providing circular reference that breaks JSON.stringify

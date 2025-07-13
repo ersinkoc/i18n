@@ -20,12 +20,15 @@ export const markdownPlugin: I18nPlugin = {
 export const icuPlugin: I18nPlugin = {
   name: 'icu',
   transform: (key, value, params, locale) => {
+    console.log('[ICU Plugin] Transform called:', { key, value, params });
+    
     // Handle basic ICU plural patterns
     if (params && 'count' in params) {
       const count = params.count as number;
       
       // Pattern: {count, plural, =0 {no items} one {one item} other {# items}}
       const pluralMatch = value.match(/\{count,\s*plural,\s*(.*?)\}/);
+      console.log('[ICU Plugin] Plural match:', pluralMatch);
       if (pluralMatch) {
         const rules = pluralMatch[1];
         
