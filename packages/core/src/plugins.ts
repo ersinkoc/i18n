@@ -20,19 +20,15 @@ export const markdownPlugin: I18nPlugin = {
 export const icuPlugin: I18nPlugin = {
   name: 'icu',
   transform: (key, value, params, locale) => {
-    console.log('[ICU Plugin] Transform called:', { key, value, params });
+    let result = value;
     
     // Handle basic ICU plural patterns
     if (params && 'count' in params) {
       const count = params.count as number;
       
-      // Pattern: {count, plural, =0 {no items} one {one item} other {# items}}
-      const pluralMatch = value.match(/\{count,\s*plural,\s*(.*?)\}/);
-      console.log('[ICU Plugin] Plural match:', pluralMatch);
-      if (pluralMatch) {
-        const rules = pluralMatch[1];
-        
-        // Parse rules - handle both =1 and one forms
+      // Pattern: {count, plural, =0 {no items} =1 {one item} other {# items}}
+      result = result.replace(/\{count,\s*plural,\s*([^}]+)\}/g, (match, rules) => {
+        // Parse rules - handle =0, =1, one, other
         const zeroMatch = rules.match(/=0\s*\{([^}]+)\}/);
         const oneMatch = rules.match(/=1\s*\{([^}]+)\}/) || rules.match(/one\s*\{([^}]+)\}/);
         const otherMatch = rules.match(/other\s*\{([^}]+)\}/);
@@ -42,19 +38,19 @@ export const icuPlugin: I18nPlugin = {
         } else if (count === 1 && oneMatch) {
           return oneMatch[1];
         } else if (otherMatch) {
-          return otherMatch[1].replace('#', String(count));
+          return otherMatch[1].replace(/#/g, String(count));
         }
-      }
+        
+        return match; // Return original if no match
+      });
     }
     
     // Handle basic ICU select patterns
     if (params && 'gender' in params) {
       const gender = params.gender as string;
       
-      // Pattern: {gender, select, male {He is here} female {She is here} other {They is here}}
-      const selectMatch = value.match(/\{gender,\s*select,\s*(.*?)\}/);
-      if (selectMatch) {
-        const rules = selectMatch[1];
+      // Pattern: {gender, select, male {He} female {She} other {They}} is here
+      result = result.replace(/\{gender,\s*select,\s*([^}]+)\}/g, (match, rules) => {
         const genderMatch = rules.match(new RegExp(`${gender}\\s*\\{([^}]+)\\}`));
         const otherMatch = rules.match(/other\s*\{([^}]+)\}/);
         
@@ -63,9 +59,16 @@ export const icuPlugin: I18nPlugin = {
         } else if (otherMatch) {
           return otherMatch[1];
         }
-      }
+        
+        return match; // Return original if no match
+      });
     }
     
-    return value;
+    // Handle complex patterns with multiple ICU expressions
+    if (params && 'name' in params) {
+      result = result.replace(/\{name\}/g, String(params.name));
+    }
+    
+    return result;
   },
 };
