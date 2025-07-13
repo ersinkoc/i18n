@@ -1,0 +1,36 @@
+{
+  "app": {
+    "title": "@oxog/i18n Demo",
+    "description": "Una biblioteca de internacionalización moderna"
+  },
+  "nav": {
+    "home": "Inicio",
+    "about": "Acerca de",
+    "contact": "Contacto"
+  },
+  "greeting": "¡Hola {{name}}!",
+  "welcome": {
+    "title": "Bienvenido a nuestra aplicación",
+    "subtitle": "Comienza editando las traducciones"
+  },
+  "items": {
+    "count": {
+      "zero": "Sin elementos",
+      "one": "Un elemento",
+      "other": "{{count}} elementos"
+    }
+  },
+  "language": {
+    "select": "Seleccionar idioma",
+    "current": "Idioma actual: {{lang}}"
+  },
+  "demo": {
+    "formats": {
+      "title": "Ejemplos de Formato",
+      "number": "Número: {{value:number}}",
+      "currency": "Moneda: {{value:currency}}",
+      "date": "Fecha: {{value:date}}",
+      "relative": "Tiempo relativo: {{value}}"
+    }
+  }
+}

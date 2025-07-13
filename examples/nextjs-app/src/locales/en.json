@@ -1,0 +1,175 @@
+{
+  "site": {
+    "title": "Next.js with @oxog/i18n",
+    "description": "A complete example of internationalization in Next.js",
+    "keywords": "nextjs, i18n, internationalization, typescript"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "products": "Products",
+    "contact": "Contact",
+    "language": "Language"
+  },
+  "home": {
+    "hero": {
+      "title": "Welcome to the Future of **i18n**",
+      "subtitle": "Experience lightning-fast, type-safe internationalization with zero dependencies",
+      "cta": "Get Started",
+      "learnMore": "Learn More"
+    },
+    "features": {
+      "title": "Why Choose @oxog/i18n?",
+      "performance": {
+        "title": "⚡ Ultra Fast",
+        "description": "{{improvement}}% faster than competitors with intelligent caching"
+      },
+      "typesafe": {
+        "title": "🔒 Type Safe",
+        "description": "Complete TypeScript integration with compile-time validation"
+      },
+      "lightweight": {
+        "title": "🪶 Lightweight",
+        "description": "Less than {{size}}KB gzipped with zero dependencies"
+      },
+      "modern": {
+        "title": "🚀 Modern",
+        "description": "Built for React {{reactVersion}}+ with Suspense and SSR support"
+      }
+    },
+    "stats": {
+      "downloads": "{{count:number}} downloads",
+      "stars": "{{count:number}} GitHub stars",
+      "users": "{{count:number}} happy developers",
+      "countries": "{{count:number}} countries"
+    }
+  },
+  "products": {
+    "title": "Our Products",
+    "subtitle": "Discover our amazing product lineup",
+    "filters": {
+      "all": "All Categories",
+      "electronics": "Electronics", 
+      "clothing": "Clothing",
+      "books": "Books"
+    },
+    "item": {
+      "price": "Price: {{price:currency}}",
+      "inStock": "{{count}} in stock",
+      "outOfStock": "Out of stock",
+      "addToCart": "Add to Cart",
+      "viewDetails": "View Details"
+    },
+    "cart": {
+      "items": {
+        "zero": "Your cart is empty",
+        "one": "{{count}} item in cart",
+        "other": "{{count}} items in cart"
+      },
+      "total": "Total: {{amount:currency}}",
+      "checkout": "Proceed to Checkout",
+      "continue": "Continue Shopping"
+    }
+  },
+  "about": {
+    "title": "About Us",
+    "mission": "Our mission is to make internationalization **simple**, **fast**, and **reliable** for modern web applications.",
+    "team": {
+      "title": "Meet Our Team",
+      "member": {
+        "role": "{{name}} - {{role}}",
+        "experience": "{{years}} years of experience",
+        "location": "Based in {{city}}, {{country}}"
+      }
+    },
+    "timeline": {
+      "title": "Our Journey",
+      "founded": "Founded in {{year}}",
+      "milestone": "{{date:date}} - {{achievement}}"
+    }
+  },
+  "contact": {
+    "title": "Get in Touch",
+    "subtitle": "We'd love to hear from you",
+    "form": {
+      "name": "Full Name",
+      "email": "Email Address",
+      "subject": "Subject",
+      "message": "Your Message",
+      "send": "Send Message",
+      "sending": "Sending...",
+      "success": "Message sent successfully!",
+      "error": "Failed to send message. Please try again."
+    },
+    "info": {
+      "address": "{{street}}, {{city}}, {{country}}",
+      "phone": "Phone: {{number}}",
+      "email": "Email: {{address}}",
+      "hours": "Business Hours: {{schedule}}"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try Again",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "close": "Close",
+    "search": "Search...",
+    "noResults": "No results found",
+    "showMore": "Show More",
+    "showLess": "Show Less"
+  },
+  "user": {
+    "login": "Sign In",
+    "logout": "Sign Out",
+    "register": "Sign Up",
+    "profile": "Profile",
+    "settings": "Settings",
+    "welcome": "Welcome back, {{name}}!",
+    "lastSeen": "Last seen {{time}}",
+    "notifications": {
+      "zero": "No new notifications",
+      "one": "{{count}} new notification",
+      "other": "{{count}} new notifications"
+    }
+  },
+  "errors": {
+    "404": {
+      "title": "Page Not Found",
+      "message": "The page you're looking for doesn't exist.",
+      "home": "Go Home"
+    },
+    "500": {
+      "title": "Server Error",
+      "message": "Something went wrong on our end.",
+      "retry": "Try Again"
+    },
+    "network": {
+      "title": "Network Error",
+      "message": "Please check your internet connection.",
+      "offline": "You're currently offline"
+    }
+  },
+  "newsletter": {
+    "title": "Stay Updated",
+    "description": "Subscribe to our newsletter for the latest updates",
+    "placeholder": "Enter your email",
+    "subscribe": "Subscribe",
+    "success": "Successfully subscribed!",
+    "alreadySubscribed": "You're already subscribed"
+  },
+  "footer": {
+    "company": "Company",
+    "products": "Products",
+    "support": "Support",
+    "legal": "Legal",
+    "social": "Follow Us",
+    "copyright": "© {{year}} {{company}}. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
+  }
+}

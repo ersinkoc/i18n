@@ -1,0 +1,48 @@
+{
+  "name": "@oxog/i18n-cli",
+  "version": "0.0.0",
+  "description": "CLI tools for @oxog/i18n",
+  "author": "Ersin Koç",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ersinkoc/i18n",
+    "directory": "packages/cli"
+  },
+  "type": "module",
+  "bin": {
+    "oxog-i18n": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@oxog/i18n": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/prompts": "^2.4.9",
+    "@vitest/coverage-v8": "^1.2.1",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "i18n",
+    "cli",
+    "internationalization",
+    "localization",
+    "translation"
+  ]
+}

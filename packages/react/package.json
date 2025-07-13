@@ -1,0 +1,60 @@
+{
+  "name": "@oxog/i18n-react",
+  "version": "0.0.0",
+  "description": "React bindings for @oxog/i18n",
+  "author": "Ersin Koç",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ersinkoc/i18n",
+    "directory": "packages/react"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@oxog/i18n": "workspace:*",
+    "react": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@oxog/i18n": "workspace:*",
+    "@testing-library/jest-dom": "^6.2.0",
+    "@testing-library/react": "^14.1.2",
+    "@types/react": "^18.2.48",
+    "@vitest/coverage-v8": "^1.2.1",
+    "jsdom": "^23.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "i18n",
+    "react",
+    "internationalization",
+    "localization",
+    "translation",
+    "typescript"
+  ]
+}

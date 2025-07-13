@@ -1,0 +1,30 @@
+{
+  "name": "@oxog/i18n-example-nextjs",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "i18n:extract": "oxog-i18n extract",
+    "i18n:validate": "oxog-i18n validate",
+    "i18n:stats": "oxog-i18n stats"
+  },
+  "dependencies": {
+    "@oxog/i18n": "workspace:*",
+    "@oxog/i18n-react": "workspace:*",
+    "next": "14.0.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@oxog/i18n-cli": "workspace:*",
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "14.0.4",
+    "typescript": "^5.3.3"
+  }
+}

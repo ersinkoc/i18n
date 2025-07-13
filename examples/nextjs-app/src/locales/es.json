@@ -1,0 +1,175 @@
+{
+  "site": {
+    "title": "Next.js con @oxog/i18n",
+    "description": "Un ejemplo completo de internacionalización en Next.js",
+    "keywords": "nextjs, i18n, internacionalización, typescript"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "about": "Acerca de",
+    "products": "Productos",
+    "contact": "Contacto",
+    "language": "Idioma"
+  },
+  "home": {
+    "hero": {
+      "title": "Bienvenido al Futuro de **i18n**",
+      "subtitle": "Experimenta internacionalización ultrarrápida y type-safe con cero dependencias",
+      "cta": "Comenzar",
+      "learnMore": "Saber Más"
+    },
+    "features": {
+      "title": "¿Por Qué Elegir @oxog/i18n?",
+      "performance": {
+        "title": "⚡ Ultra Rápido",
+        "description": "{{improvement}}% más rápido que los competidores con caché inteligente"
+      },
+      "typesafe": {
+        "title": "🔒 Type Safe",
+        "description": "Integración completa de TypeScript con validación en tiempo de compilación"
+      },
+      "lightweight": {
+        "title": "🪶 Ligero",
+        "description": "Menos de {{size}}KB comprimido con cero dependencias"
+      },
+      "modern": {
+        "title": "🚀 Moderno",
+        "description": "Construido para React {{reactVersion}}+ con Suspense y soporte SSR"
+      }
+    },
+    "stats": {
+      "downloads": "{{count:number}} descargas",
+      "stars": "{{count:number}} estrellas en GitHub",
+      "users": "{{count:number}} desarrolladores felices",
+      "countries": "{{count:number}} países"
+    }
+  },
+  "products": {
+    "title": "Nuestros Productos",
+    "subtitle": "Descubre nuestra increíble línea de productos",
+    "filters": {
+      "all": "Todas las Categorías",
+      "electronics": "Electrónicos",
+      "clothing": "Ropa",
+      "books": "Libros"
+    },
+    "item": {
+      "price": "Precio: {{price:currency}}",
+      "inStock": "{{count}} en stock",
+      "outOfStock": "Agotado",
+      "addToCart": "Agregar al Carrito",
+      "viewDetails": "Ver Detalles"
+    },
+    "cart": {
+      "items": {
+        "zero": "Tu carrito está vacío",
+        "one": "{{count}} artículo en el carrito",
+        "other": "{{count}} artículos en el carrito"
+      },
+      "total": "Total: {{amount:currency}}",
+      "checkout": "Proceder al Pago",
+      "continue": "Continuar Comprando"
+    }
+  },
+  "about": {
+    "title": "Acerca de Nosotros",
+    "mission": "Nuestra misión es hacer que la internacionalización sea **simple**, **rápida** y **confiable** para aplicaciones web modernas.",
+    "team": {
+      "title": "Conoce Nuestro Equipo",
+      "member": {
+        "role": "{{name}} - {{role}}",
+        "experience": "{{years}} años de experiencia",
+        "location": "Con base en {{city}}, {{country}}"
+      }
+    },
+    "timeline": {
+      "title": "Nuestro Viaje",
+      "founded": "Fundada en {{year}}",
+      "milestone": "{{date:date}} - {{achievement}}"
+    }
+  },
+  "contact": {
+    "title": "Ponte en Contacto",
+    "subtitle": "Nos encantaría saber de ti",
+    "form": {
+      "name": "Nombre Completo",
+      "email": "Dirección de Email",
+      "subject": "Asunto",
+      "message": "Tu Mensaje",
+      "send": "Enviar Mensaje",
+      "sending": "Enviando...",
+      "success": "¡Mensaje enviado exitosamente!",
+      "error": "Error al enviar el mensaje. Por favor intenta de nuevo."
+    },
+    "info": {
+      "address": "{{street}}, {{city}}, {{country}}",
+      "phone": "Teléfono: {{number}}",
+      "email": "Email: {{address}}",
+      "hours": "Horario de Atención: {{schedule}}"
+    }
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Algo salió mal",
+    "retry": "Intentar de Nuevo",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "confirm": "Confirmar",
+    "close": "Cerrar",
+    "search": "Buscar...",
+    "noResults": "No se encontraron resultados",
+    "showMore": "Mostrar Más",
+    "showLess": "Mostrar Menos"
+  },
+  "user": {
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "register": "Registrarse",
+    "profile": "Perfil",
+    "settings": "Configuración",
+    "welcome": "¡Bienvenido de vuelta, {{name}}!",
+    "lastSeen": "Visto por última vez {{time}}",
+    "notifications": {
+      "zero": "Sin notificaciones nuevas",
+      "one": "{{count}} notificación nueva",
+      "other": "{{count}} notificaciones nuevas"
+    }
+  },
+  "errors": {
+    "404": {
+      "title": "Página No Encontrada",
+      "message": "La página que buscas no existe.",
+      "home": "Ir al Inicio"
+    },
+    "500": {
+      "title": "Error del Servidor",
+      "message": "Algo salió mal de nuestro lado.",
+      "retry": "Intentar de Nuevo"
+    },
+    "network": {
+      "title": "Error de Red",
+      "message": "Por favor verifica tu conexión a internet.",
+      "offline": "Actualmente estás sin conexión"
+    }
+  },
+  "newsletter": {
+    "title": "Mantente Actualizado",
+    "description": "Suscríbete a nuestro newsletter para las últimas actualizaciones",
+    "placeholder": "Ingresa tu email",
+    "subscribe": "Suscribirse",
+    "success": "¡Suscripción exitosa!",
+    "alreadySubscribed": "Ya estás suscrito"
+  },
+  "footer": {
+    "company": "Empresa",
+    "products": "Productos",
+    "support": "Soporte",
+    "legal": "Legal",
+    "social": "Síguenos",
+    "copyright": "© {{year}} {{company}}. Todos los derechos reservados.",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos de Servicio"
+  }
+}

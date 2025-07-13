@@ -1,0 +1,319 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  FORCE_COLOR: true
+
+jobs:
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed for quality analysis
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run linting
+        run: pnpm lint
+
+      - name: Run type checking
+        run: pnpm typecheck
+
+      - name: Check for dependency vulnerabilities
+        run: pnpm audit --audit-level high
+
+      - name: Verify zero dependencies
+        run: |
+          echo "Checking for unauthorized dependencies..."
+          CORE_DEPS=$(jq -r '.dependencies // {} | keys | length' packages/core/package.json)
+          REACT_DEPS=$(jq -r '.dependencies // {} | to_entries | map(select(.key != "@oxog/i18n")) | length' packages/react/package.json)
+          CLI_DEPS=$(jq -r '.dependencies // {} | to_entries | map(select(.key != "@oxog/i18n")) | length' packages/cli/package.json)
+          VITE_DEPS=$(jq -r '.dependencies // {} | to_entries | map(select(.key != "@oxog/i18n")) | length' packages/vite-plugin/package.json)
+          
+          if [ "$CORE_DEPS" -ne 0 ] || [ "$REACT_DEPS" -ne 0 ] || [ "$CLI_DEPS" -ne 0 ] || [ "$VITE_DEPS" -ne 0 ]; then
+            echo "❌ Unauthorized dependencies found!"
+            echo "Core: $CORE_DEPS, React: $REACT_DEPS, CLI: $CLI_DEPS, Vite: $VITE_DEPS"
+            exit 1
+          fi
+          echo "✅ Zero dependency requirement verified!"
+
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18, 20, 21]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run unit tests
+        run: pnpm test:coverage
+
+      - name: Run integration tests
+        run: pnpm test:integration
+
+      - name: Verify 100% coverage
+        run: |
+          echo "Checking coverage requirements..."
+          node -e "
+            const coverage = require('./coverage/coverage-summary.json');
+            const { branches, functions, lines, statements } = coverage.total;
+            const threshold = 95;
+            const results = [
+              ['Branches', branches.pct],
+              ['Functions', functions.pct], 
+              ['Lines', lines.pct],
+              ['Statements', statements.pct]
+            ];
+            let failed = false;
+            results.forEach(([name, pct]) => {
+              if (pct < threshold) {
+                console.log(\`❌ \${name}: \${pct}% (required: \${threshold}%)\`);
+                failed = true;
+              } else {
+                console.log(\`✅ \${name}: \${pct}%\`);
+              }
+            });
+            if (failed) process.exit(1);
+            console.log('🎉 All coverage requirements met!');
+          "
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        if: matrix.node-version == 20 && matrix.os == 'ubuntu-latest'
+        with:
+          files: ./coverage/coverage-final.json
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
+
+  performance:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run performance benchmarks
+        run: pnpm test:benchmark
+
+      - name: Check bundle size limits
+        run: |
+          pnpm build
+          echo "Checking bundle sizes..."
+          CORE_SIZE=$(stat -c%s packages/core/dist/index.mjs)
+          REACT_SIZE=$(stat -c%s packages/react/dist/index.mjs)
+          
+          # 5KB = 5120 bytes
+          MAX_CORE_SIZE=5120
+          # 2KB = 2048 bytes  
+          MAX_REACT_SIZE=2048
+          
+          if [ "$CORE_SIZE" -gt "$MAX_CORE_SIZE" ]; then
+            echo "❌ Core bundle too large: ${CORE_SIZE} bytes (max: ${MAX_CORE_SIZE})"
+            exit 1
+          fi
+          
+          if [ "$REACT_SIZE" -gt "$MAX_REACT_SIZE" ]; then
+            echo "❌ React bundle too large: ${REACT_SIZE} bytes (max: ${MAX_REACT_SIZE})"
+            exit 1
+          fi
+          
+          echo "✅ Bundle sizes within limits:"
+          echo "  Core: ${CORE_SIZE} bytes"
+          echo "  React: ${REACT_SIZE} bytes"
+
+  build:
+    name: Build & Package
+    runs-on: ubuntu-latest
+    needs: [quality-gates, test]
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Verify build outputs
+        run: |
+          echo "Verifying build outputs..."
+          for pkg in core react cli vite-plugin; do
+            if [ ! -d "packages/$pkg/dist" ]; then
+              echo "❌ Missing dist directory for $pkg"
+              exit 1
+            fi
+            if [ ! -f "packages/$pkg/dist/index.d.ts" ]; then
+              echo "❌ Missing TypeScript declarations for $pkg"
+              exit 1
+            fi
+          done
+          echo "✅ All build outputs verified"
+
+      - name: Test CLI tool
+        run: |
+          echo "Testing CLI functionality..."
+          cd packages/cli
+          node dist/cli.js --help
+          echo "✅ CLI tool working"
+
+      - name: Package for npm
+        run: |
+          echo "Packaging for npm..."
+          pnpm pack --pack-destination ./packages-dist
+          ls -la packages-dist/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ github.sha }}
+          path: |
+            packages/*/dist
+            packages-dist/
+          retention-days: 30
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  examples:
+    name: Test Examples
+    runs-on: ubuntu-latest
+    needs: [build]
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        example: [react-vite, nextjs-app]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Test example - ${{ matrix.example }}
+        run: |
+          cd examples/${{ matrix.example }}
+          pnpm install
+          pnpm build
+          echo "✅ Example ${{ matrix.example }} builds successfully"
+
+  status-check:
+    name: Status Check
+    runs-on: ubuntu-latest
+    needs: [quality-gates, test, performance, build, security, examples]
+    if: always()
+    timeout-minutes: 5
+    steps:
+      - name: Check job results
+        run: |
+          if [ "${{ needs.quality-gates.result }}" != "success" ] || \
+             [ "${{ needs.test.result }}" != "success" ] || \
+             [ "${{ needs.performance.result }}" != "success" ] || \
+             [ "${{ needs.build.result }}" != "success" ] || \
+             [ "${{ needs.security.result }}" != "success" ] || \
+             [ "${{ needs.examples.result }}" != "success" ]; then
+            echo "❌ One or more quality gates failed"
+            exit 1
+          fi
+          echo "🎉 All quality gates passed!"
