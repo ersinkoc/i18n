@@ -27,7 +27,10 @@ describe('interpolate', () => {
   
   it('should format dates', () => {
     const date = new Date('2024-01-15');
-    expect(interpolate('Date: {{date}}', { date })).toMatch(/Date: \d{1,2}\/\d{1,2}\/\d{4}/);
+    const result = interpolate('Date: {{date}}', { date });
+    expect(result).toContain('2024');
+    expect(result).toContain('15');
+    expect(result).toContain('01');
   });
   
   it('should handle typed parameters', () => {

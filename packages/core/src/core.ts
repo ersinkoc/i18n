@@ -73,6 +73,12 @@ export function createI18n<TMessages extends Messages = Messages>(
     const localeMessages = messages[locale];
     if (!localeMessages) return undefined;
     
+    // First try direct key access (for flat keys like 'user.role.admin')
+    if (key in localeMessages) {
+      return localeMessages[key] as string;
+    }
+    
+    // Then try nested access (for nested objects like user.role.admin)
     return getNestedValue<string>(localeMessages, key);
   }
   

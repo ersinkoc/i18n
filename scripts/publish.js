@@ -163,22 +163,20 @@ async function main() {
     }
     printStatus('Dependencies installed');
 
-    // Run basic build test (skip comprehensive tests for now)
-    printInfo('Running basic build validation...');
-    try {
-      execCommand('pnpm test', { allowFailure: true });
-      printWarning('Some tests failed but continuing with publish (tests need fixing)');
-    } catch (error) {
-      printWarning('Tests failed but continuing for emergency publish');
-    }
+    // Run full test suite
+    printInfo('Running full test suite...');
+    execCommand('pnpm test');
+    printStatus('All tests passed');
 
-    // Run linting (skip for emergency publish)
-    printInfo('Skipping linting for emergency publish...');
-    printWarning('Linting skipped - fix before next release');
+    // Run linting
+    printInfo('Running linting...');
+    execCommand('pnpm lint');
+    printStatus('Linting passed');
 
-    // Run type checking (skip for emergency publish) 
-    printInfo('Skipping type checking for emergency publish...');
-    printWarning('Type checking skipped - fix before next release');
+    // Run type checking
+    printInfo('Running type checking...');
+    execCommand('pnpm typecheck');
+    printStatus('Type checking passed');
 
     // Build all packages
     printInfo('Building all packages...');

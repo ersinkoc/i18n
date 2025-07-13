@@ -37,7 +37,7 @@ describe('Edge Cases & Production Safety', () => {
 
       i18n.t('missing');
 
-      expect(consoleSpy).toHaveBeenCalledWith('Missing translation: missing for locale: en');
+      expect(consoleSpy).toHaveBeenCalledWith('[i18n] Missing translation: missing for locale: en');
       
       consoleSpy.mockRestore();
       process.env.NODE_ENV = originalEnv;
