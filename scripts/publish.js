@@ -152,7 +152,14 @@ async function main() {
 
     // Install dependencies
     printInfo('Installing dependencies...');
-    execCommand('pnpm install --frozen-lockfile');
+    try {
+      // Try with frozen lockfile first
+      execCommand('pnpm install --frozen-lockfile');
+    } catch (error) {
+      // If frozen lockfile fails, install normally
+      printWarning('Lockfile missing, installing without frozen lockfile...');
+      execCommand('pnpm install');
+    }
     printStatus('Dependencies installed');
 
     // Run full test suite
