@@ -60,6 +60,7 @@ function execCommand(command, options = {}) {
     return execSync(command, { 
       encoding: 'utf8', 
       stdio: options.silent ? 'pipe' : 'inherit',
+      shell: true, // Force shell usage for Windows compatibility
       ...options 
     });
   } catch (error) {
