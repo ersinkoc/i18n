@@ -3,7 +3,6 @@ import type {
   I18nInstance,
   I18nPlugin,
   LocaleCode,
-  LocaleMessages,
   Messages,
   TranslationFunction,
   TranslationParams,
@@ -38,27 +37,27 @@ export function createI18n<TMessages extends Messages = Messages>(
   const listeners = new Set<(locale: LocaleCode) => void>();
   const translationCache = createCache<string>();
   
-  const formatters = new Map<string, (value: TranslationValue, format?: string) => string>();
+  const formatters = new Map<string, (value: TranslationValue, format?: string, locale?: string) => string>();
   
   // Built-in formatters
-  formatters.set('number', (value, format) => {
+  formatters.set('number', (value, format, locale) => {
     if (typeof value !== 'number') return String(value);
     const options = config.formats?.number?.[format || 'default'] || {};
-    return new Intl.NumberFormat(currentLocale, options).format(value);
+    return new Intl.NumberFormat(locale || currentLocale, options).format(value);
   });
   
-  formatters.set('date', (value, format) => {
+  formatters.set('date', (value, format, locale) => {
     if (!(value instanceof Date)) return String(value);
     const options = config.formats?.date?.[format || 'default'] || {};
-    return new Intl.DateTimeFormat(currentLocale, options).format(value);
+    return new Intl.DateTimeFormat(locale || currentLocale, options).format(value);
   });
   
-  formatters.set('currency', (value, format) => {
+  formatters.set('currency', (value, format, locale) => {
     if (typeof value !== 'number') return String(value);
     const parts = (format || 'currency:USD').split(':');
     const currency = parts.length > 1 ? parts[1] || 'USD' : 'USD';
     try {
-      return new Intl.NumberFormat(currentLocale, {
+      return new Intl.NumberFormat(locale || currentLocale, {
         style: 'currency',
         currency,
       }).format(value);
@@ -70,7 +69,9 @@ export function createI18n<TMessages extends Messages = Messages>(
   // Register plugin formatters
   plugins.forEach(plugin => {
     if (plugin.format) {
-      formatters.set(plugin.name, plugin.format);
+      formatters.set(plugin.name, (value, format, locale) => 
+        plugin.format!(value, format ?? '', locale ?? currentLocale)
+      );
     }
   });
   
@@ -143,7 +144,7 @@ export function createI18n<TMessages extends Messages = Messages>(
       }
       
       // Always interpolate to handle empty parameters 
-      result = interpolate(result, params || {}, formatters);
+      result = interpolate(result, params || {}, formatters, currentLocale);
       
       translationCache.set(cacheKey, result);
       return result;
@@ -241,7 +242,9 @@ export function createI18n<TMessages extends Messages = Messages>(
   function addPlugin(plugin: I18nPlugin<TMessages>): void {
     plugins.push(plugin);
     if (plugin.format) {
-      formatters.set(plugin.name, plugin.format);
+      formatters.set(plugin.name, (value, format, locale) => 
+        plugin.format!(value, format ?? '', locale ?? currentLocale)
+      );
     }
     translationCache.clear();
   }
@@ -262,12 +265,12 @@ export function createI18n<TMessages extends Messages = Messages>(
   
   function formatNumber(value: number, format?: string): string {
     const formatter = formatters.get('number')!;
-    return formatter(value, format);
+    return formatter(value, format, currentLocale);
   }
   
   function formatDate(value: Date, format?: string): string {
     const formatter = formatters.get('date')!;
-    return formatter(value, format);
+    return formatter(value, format, currentLocale);
   }
   
   function formatRelativeTime(value: Date, baseDate: Date = new Date()): string {

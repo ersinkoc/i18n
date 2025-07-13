@@ -3,7 +3,8 @@ import type { TranslationParams, TranslationValue } from './types';
 export function interpolate(
   template: string,
   params: TranslationParams,
-  formatters?: Map<string, (value: TranslationValue, format?: string) => string>
+  formatters?: Map<string, (value: TranslationValue, format?: string, locale?: string) => string>,
+  locale?: string
 ): string {
   if (typeof template !== 'string') {
     return String(template);
@@ -26,7 +27,7 @@ export function interpolate(
         if (format && formatters?.has(format)) {
           try {
             const formatter = formatters.get(format)!;
-            return formatter(value, key.includes(':') ? key.split(':').slice(1).join(':') : undefined);
+            return formatter(value, key.includes(':') ? key.split(':').slice(1).join(':') : undefined, locale);
           } catch (error) {
             if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
               console.error(`[i18n] Formatter error for ${format}:`, error);
@@ -80,12 +81,12 @@ export function deepMerge<T extends Record<string, any>>(
           typeof source[key] === 'object' &&
           source[key] !== null &&
           !Array.isArray(source[key]) &&
-          !(source[key] instanceof Date)
+          !(source[key] as any instanceof Date)
         ) {
           result[key] = deepMerge(
-            result[key] || {},
+            result[key] || ({} as any),
             source[key] as any
-          );
+          ) as any;
         } else {
           result[key] = source[key] as any;
         }

@@ -4,7 +4,7 @@ export type TranslationValue = string | number | boolean | Date | null | undefin
 
 export type TranslationParams = Record<string, TranslationValue>;
 
-export type ParseKeys<T> = T extends `${infer Start}{{${infer Param}}}${infer Rest}`
+export type ParseKeys<T> = T extends `${infer _Start}{{${infer Param}}}${infer Rest}`
   ? Param extends `${infer Key}:${infer Type}`
     ? { [K in Key]: Type extends 'number' ? number : Type extends 'boolean' ? boolean : Type extends 'date' ? Date : string } & ParseKeys<Rest>
     : { [K in Param]: TranslationValue } & ParseKeys<Rest>

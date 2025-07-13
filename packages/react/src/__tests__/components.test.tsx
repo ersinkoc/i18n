@@ -125,9 +125,14 @@ describe('Trans Component', () => {
       </TestWrapper>
     );
     
-    expect(screen.getByText('Click')).toBeInTheDocument();
-    expect(screen.getByText('to continue')).toBeInTheDocument();
-    expect(screen.getByTestId('link')).toBeInTheDocument();
+    // Check that the link component is rendered with correct text
+    const link = screen.getByTestId('link');
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveTextContent('here');
+    
+    // Check that the parent contains the full text
+    const parent = link.parentElement;
+    expect(parent).toHaveTextContent('Click here to continue');
   });
 
   it('should handle nested components', () => {
@@ -170,8 +175,10 @@ describe('Trans Component', () => {
       </TestWrapper>
     );
     
-    const container = screen.getByText('Click').closest('div');
-    expect(container).toHaveClass('complex-trans');
+    // Find the div with complex-trans class
+    const container = document.querySelector('.complex-trans');
+    expect(container).toBeInTheDocument();
+    expect(container).toHaveTextContent('Click here to continue');
   });
 });
 

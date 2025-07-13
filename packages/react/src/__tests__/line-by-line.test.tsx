@@ -6,6 +6,15 @@ import { I18nProvider, useI18nContext, useI18n } from '../context';
 import { useTranslation, useLocale, useHasTranslation } from '../hooks';
 import { T, Trans, NumberFormat, DateFormat, RelativeTime } from '../components';
 
+// Mock the context module
+vi.mock('../context', async () => {
+  const actual = await vi.importActual('../context');
+  return {
+    ...actual,
+    useI18nContext: vi.fn(actual.useI18nContext as any),
+  };
+});
+
 interface TestMessages {
   'greeting': 'Hello!';
   'welcome': 'Welcome {{name}}!';
@@ -281,8 +290,7 @@ describe('Line-by-Line Test Coverage - React Package', () => {
     // Line 37: if (!i18n) { throw ... }
     it('should validate i18n instance exists', () => {
       // Mock useI18nContext to return context without i18n
-      const originalUseI18nContext = useI18nContext;
-      vi.mocked(useI18nContext).mockReturnValue({ i18n: null as any });
+      vi.mocked(useI18nContext).mockReturnValueOnce({ i18n: null as any });
       
       const TestComponent = () => {
         useI18n();
@@ -290,8 +298,11 @@ describe('Line-by-Line Test Coverage - React Package', () => {
       };
       
       expect(() => render(<TestComponent />)).toThrow(
-        '[i18n] useI18n requires a valid i18n instance'
+        '[i18n] useI18nContext must be used within an I18nProvider with a valid i18n instance'
       );
+      
+      // Reset the mock
+      vi.mocked(useI18nContext).mockRestore();
     });
 
     // Lines 41-47: useSyncExternalStore implementation
@@ -1101,7 +1112,7 @@ describe('Line-by-Line Test Coverage - React Package', () => {
         </I18nProvider>
       );
       
-      expect(errorSpy).toHaveBeenCalledWith('[i18n] RelativeTime component requires a valid Date object');
+      expect(errorSpy).toHaveBeenCalledWith('[i18n] RelativeTime component requires a valid Date object for value');
     });
 
     it('should handle invalid baseDate', () => {
@@ -1119,7 +1130,7 @@ describe('Line-by-Line Test Coverage - React Package', () => {
         </I18nProvider>
       );
       
-      expect(errorSpy).toHaveBeenCalledWith('[i18n] RelativeTime component baseDate must be a valid Date object');
+      expect(errorSpy).toHaveBeenCalledWith('[i18n] RelativeTime component requires a valid Date object for baseDate');
     });
 
     it('should handle string value', () => {
@@ -1134,7 +1145,7 @@ describe('Line-by-Line Test Coverage - React Package', () => {
         </I18nProvider>
       );
       
-      expect(errorSpy).toHaveBeenCalledWith('[i18n] RelativeTime component requires a valid Date object');
+      expect(errorSpy).toHaveBeenCalledWith('[i18n] RelativeTime component requires a valid Date object for value');
       expect(screen.getByText('2024-01-01')).toBeInTheDocument();
     });
 

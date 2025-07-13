@@ -165,11 +165,12 @@ export class Commander {
   private getOptionKey(flags: string): string {
     const [, longFlag] = this.parseFlags(flags);
     if (longFlag) {
-      return longFlag.replace(/^--/, '').replace(/-/g, '_');
+      // Remove -- prefix and <value> or [value] suffix, then convert dashes to underscores
+      return longFlag.replace(/^--/, '').replace(/\s*[<\[].*$/, '').replace(/-/g, '_');
     }
     
     const [shortFlag] = this.parseFlags(flags);
-    return shortFlag!.replace(/^-/, '');
+    return shortFlag!.replace(/^-/, '').replace(/\s*[<\[].*$/, '');
   }
 
   private isBooleanOption(option: CommandOption): boolean {

@@ -33,7 +33,7 @@ export function useTranslation<TMessages extends Messages = Messages>(
       formatDate: i18n.formatDate.bind(i18n),
       formatRelativeTime: i18n.formatRelativeTime.bind(i18n),
     }),
-    [i18n, t]
+    [i18n, t, i18n.locale]
   );
 }
 

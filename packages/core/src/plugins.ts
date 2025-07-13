@@ -5,7 +5,7 @@ import type { I18nPlugin } from './types';
  */
 export const markdownPlugin: I18nPlugin = {
   name: 'markdown',
-  transform: (key, value, params, locale) => {
+  transform: (_key, value, _params, _locale) => {
     return value
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -42,12 +42,12 @@ function parseICUBalanced(text: string, startPattern: RegExp): { match: string; 
 
 export const icuPlugin: I18nPlugin = {
   name: 'icu',
-  transform: (key, value, params, locale) => {
+  transform: (_key, value, _params, _locale) => {
     let result = value;
     
     // Handle basic ICU plural patterns
-    if (params && 'count' in params) {
-      const count = params.count as number;
+    if (_params && 'count' in _params) {
+      const count = _params.count as number;
       
       // Pattern: {count, plural, =0 {no items} =1 {one item} other {# items}}
       const pluralInfo = parseICUBalanced(result, /\{count,\s*plural,\s*/);
@@ -73,8 +73,8 @@ export const icuPlugin: I18nPlugin = {
     }
     
     // Handle basic ICU select patterns
-    if (params && 'gender' in params) {
-      const gender = params.gender as string;
+    if (_params && 'gender' in _params) {
+      const gender = _params.gender as string;
       
       // Pattern: {gender, select, male {He} female {She} other {They}}
       const selectInfo = parseICUBalanced(result, /\{gender,\s*select,\s*/);
@@ -95,8 +95,8 @@ export const icuPlugin: I18nPlugin = {
     }
     
     // Handle simple parameter replacement
-    if (params && 'name' in params) {
-      result = result.replace(/\{name\}/g, String(params.name));
+    if (_params && 'name' in _params) {
+      result = result.replace(/\{name\}/g, String(_params.name));
     }
     
     return result;

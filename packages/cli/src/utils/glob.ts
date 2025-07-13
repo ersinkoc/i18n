@@ -22,7 +22,7 @@ export async function glob(pattern: string, cwd = process.cwd()): Promise<string
             await walk(fullPath);
           }
         } else if (stats.isFile()) {
-          const relativePath = relative(cwd, fullPath);
+          const relativePath = relative(cwd, fullPath).replace(/\\/g, '/');
           if (regex.test(relativePath)) {
             results.push(fullPath);
           }
@@ -38,13 +38,16 @@ export async function glob(pattern: string, cwd = process.cwd()): Promise<string
 }
 
 function globToRegex(pattern: string): RegExp {
+  // Normalize path separators first - convert all to forward slashes
+  pattern = pattern.replace(/\\/g, '/');
+  
   // Escape special regex characters except glob special characters
   let regex = pattern
     .replace(/[.+^${}()|[\]\\]/g, '\\$&')
     .replace(/\*\*/g, '___DOUBLESTAR___')
-    .replace(/\*/g, '[^/\\\\]*')
+    .replace(/\*/g, '___STAR___')
     .replace(/___DOUBLESTAR___/g, '.*')
-    .replace(/\?/g, '[^/\\\\]');
+    .replace(/\?/g, '___QUESTION___');
   
   // Handle file extensions in braces like {js,ts,tsx}
   regex = regex.replace(/\\\{([^}]+)\\\}/g, (_, group) => {
@@ -52,8 +55,13 @@ function globToRegex(pattern: string): RegExp {
     return `(${options})`;
   });
   
-  // Normalize path separators
+  // Convert forward slashes to match both forward and back slashes
   regex = regex.replace(/\//g, '[\\/\\\\]');
+  
+  // Now replace the placeholders with character classes that won't interfere with slash replacement
+  regex = regex
+    .replace(/___STAR___/g, '[^\\/\\\\]*')
+    .replace(/___QUESTION___/g, '[^\\/\\\\]');
   
   return new RegExp(`^${regex}$`);
 }

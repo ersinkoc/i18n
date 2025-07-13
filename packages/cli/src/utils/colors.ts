@@ -1,10 +1,10 @@
 // Zero-dependency terminal colors implementation
-const isColorSupported = !process.env.NO_COLOR && 
+const getIsColorSupported = () => !process.env.NO_COLOR && 
   process.env.FORCE_COLOR !== '0' && 
   (process.env.FORCE_COLOR === '1' || process.stdout.isTTY);
 
 const colorize = (code: number) => (text: string) => 
-  isColorSupported ? `\x1b[${code}m${text}\x1b[0m` : text;
+  getIsColorSupported() ? `\x1b[${code}m${text}\x1b[0m` : text;
 
 export const colors = {
   reset: colorize(0),
