@@ -26,7 +26,7 @@ export function interpolate(
         if (format && formatters?.has(format)) {
           try {
             const formatter = formatters.get(format)!;
-            return formatter(value, format);
+            return formatter(value, key.includes(':') ? key.split(':').slice(1).join(':') : undefined);
           } catch (error) {
             if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
               console.error(`[i18n] Formatter error for ${format}:`, error);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createI18n } from '../core';
-import { createICUPlugin, createMarkdownPlugin } from '../plugins';
+import { markdownPlugin, icuPlugin } from '../plugins';
 import type { Messages } from '../types';
 
 interface TestMessages extends Messages {
@@ -18,7 +18,7 @@ describe('Markdown Plugin', () => {
           'markdown.text': '**Bold** and *italic* and `code`',
         },
       },
-      plugins: [createMarkdownPlugin()],
+      plugins: [markdownPlugin],
     });
 
     const result = i18n.t('markdown.text');
@@ -33,7 +33,7 @@ describe('Markdown Plugin', () => {
           link: 'Visit [Google](https://google.com) for search',
         },
       },
-      plugins: [createMarkdownPlugin()],
+      plugins: [markdownPlugin],
     });
 
     const result = i18n.t('link');
@@ -50,7 +50,7 @@ describe('ICU Plugin', () => {
           'icu.plural': '{count, plural, =0 {no items} =1 {one item} other {# items}}',
         },
       },
-      plugins: [createICUPlugin()],
+      plugins: [icuPlugin],
     });
 
     expect(i18n.t('icu.plural', { count: 0 })).toBe('no items');
@@ -66,7 +66,7 @@ describe('ICU Plugin', () => {
           'icu.select': '{gender, select, male {He} female {She} other {They}} is here',
         },
       },
-      plugins: [createICUPlugin()],
+      plugins: [icuPlugin],
     });
 
     expect(i18n.t('icu.select', { gender: 'male' })).toBe('He is here');
@@ -82,7 +82,7 @@ describe('ICU Plugin', () => {
           complex: '{name} has {count, plural, =0 {no messages} =1 {one message} other {# messages}}',
         },
       },
-      plugins: [createICUPlugin()],
+      plugins: [icuPlugin],
     });
 
     expect(i18n.t('complex', { name: 'John', count: 0 })).toBe('John has no messages');
@@ -106,7 +106,7 @@ describe('Plugin System', () => {
     expect(i18n.t('text')).toBe('**Bold text**');
 
     // Add plugin
-    i18n.addPlugin(createMarkdownPlugin());
+    i18n.addPlugin(markdownPlugin);
     expect(i18n.t('text')).toBe('<strong>Bold text</strong>');
   });
 
@@ -118,7 +118,7 @@ describe('Plugin System', () => {
           text: '**Bold text**',
         },
       },
-      plugins: [createMarkdownPlugin()],
+      plugins: [markdownPlugin],
     });
 
     // With plugin

@@ -20,6 +20,17 @@ import {
 export function createI18n<TMessages extends Messages = Messages>(
   config: I18nConfig<TMessages>
 ): I18nInstance<TMessages> {
+  // Validate config
+  if (!config) {
+    throw new Error('[i18n] Configuration is required');
+  }
+  if (!config.locale) {
+    throw new Error('[i18n] Locale is required');
+  }
+  if (!config.messages) {
+    throw new Error('[i18n] Messages are required');
+  }
+
   let currentLocale = config.locale;
   const fallbackLocale = config.fallbackLocale;
   const messages = { ...config.messages };
@@ -82,22 +93,29 @@ export function createI18n<TMessages extends Messages = Messages>(
         message = getMessage(key, fallbackLocale);
       }
       
+      // Handle pluralization before checking if message exists
+      if (params && 'count' in params && typeof params.count === 'number') {
+        const pluralForm = getPluralForm(locale, params.count, config.pluralizationRules);
+        const pluralKey = `${key}.${pluralForm}`;
+        const pluralMessage = getMessage(pluralKey, locale);
+        
+        // Try fallback locale for plural
+        if (!pluralMessage && fallbackLocale && locale !== fallbackLocale) {
+          const fallbackPluralMessage = getMessage(pluralKey, fallbackLocale);
+          if (fallbackPluralMessage) {
+            message = fallbackPluralMessage;
+          }
+        } else if (pluralMessage) {
+          message = pluralMessage;
+        }
+      }
+
       if (!message) {
         if (config.warnOnMissingTranslations && typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
           console.warn(`[i18n] Missing translation: ${key} for locale: ${locale}`);
         }
         return key;
       }
-    
-    // Handle pluralization
-    if (params && 'count' in params && typeof params.count === 'number') {
-      const pluralForm = getPluralForm(locale, params.count, config.pluralizationRules);
-      const pluralKey = `${key}.${pluralForm}`;
-      const pluralMessage = getMessage(pluralKey, locale);
-      if (pluralMessage) {
-        message = pluralMessage;
-      }
-    }
     
       // Apply plugins
       let result = message;

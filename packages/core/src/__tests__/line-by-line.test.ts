@@ -1203,8 +1203,9 @@ describe('Line-by-Line Test Coverage - Core Package', () => {
       });
       
       // Force an error by mocking deepMerge
-      const originalDeepMerge = require('../utils').deepMerge;
-      require('../utils').deepMerge = () => {
+      const utils = await import('../utils');
+      const originalDeepMerge = utils.deepMerge;
+      (utils as any).deepMerge = () => {
         throw new Error('Merge error');
       };
       
