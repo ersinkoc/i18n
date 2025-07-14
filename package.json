@@ -1,6 +1,6 @@
 {
   "name": "@oxog/i18n-monorepo",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Modern, lightweight, and framework-agnostic internationalization package",
   "repository": {

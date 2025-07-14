@@ -1,6 +1,6 @@
 {
   "name": "@oxog/i18n-react",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "React bindings for @oxog/i18n",
   "author": "Ersin Koç",
   "license": "MIT",
