@@ -52,9 +52,20 @@ export async function extract(options: ExtractOptions) {
       // Load existing translations if file exists
       try {
         const content = await fs.readFile(filePath, 'utf-8');
-        existingTranslations = JSON.parse(content);
-      } catch {
+        try {
+          existingTranslations = JSON.parse(content);
+        } catch (parseError) {
+          spinner.fail(`Failed to parse existing file: ${filePath}`);
+          console.error(
+            colors.red(
+              `  JSON parse error: ${parseError instanceof Error ? parseError.message : String(parseError)}`
+            )
+          );
+          process.exit(1);
+        }
+      } catch (readError) {
         // File doesn't exist, start fresh
+        // This is expected for new extractions
       }
       
       // Create translation object with nested structure
