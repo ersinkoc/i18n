@@ -264,12 +264,18 @@ export function createI18n<TMessages extends Messages = Messages>(
   }
   
   function formatNumber(value: number, format?: string): string {
-    const formatter = formatters.get('number')!;
+    const formatter = formatters.get('number');
+    if (!formatter) {
+      throw new Error('[i18n] Number formatter not available. Please add a plugin that provides number formatting.');
+    }
     return formatter(value, format, currentLocale);
   }
-  
+
   function formatDate(value: Date, format?: string): string {
-    const formatter = formatters.get('date')!;
+    const formatter = formatters.get('date');
+    if (!formatter) {
+      throw new Error('[i18n] Date formatter not available. Please add a plugin that provides date formatting.');
+    }
     return formatter(value, format, currentLocale);
   }
   

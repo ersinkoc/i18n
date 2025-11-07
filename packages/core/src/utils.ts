@@ -26,7 +26,10 @@ export function interpolate(
         
         if (format && formatters?.has(format)) {
           try {
-            const formatter = formatters.get(format)!;
+            const formatter = formatters.get(format);
+            if (!formatter) {
+              return String(value);
+            }
             return formatter(value, key.includes(':') ? key.split(':').slice(1).join(':') : undefined, locale);
           } catch (error) {
             if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
@@ -41,7 +44,12 @@ export function interpolate(
         }
         
         if (value instanceof Date) {
-          return value.toLocaleDateString();
+          // Use ISO date format for consistent formatting across all locales
+          return value.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
         }
         
         return String(value);
@@ -67,15 +75,33 @@ export function deepMerge<T extends Record<string, any>>(
   if (!target || typeof target !== 'object') {
     throw new Error('[i18n] Invalid target for deepMerge');
   }
-  
+
   if (!source || typeof source !== 'object') {
     return target;
   }
-  
+
   try {
     const result = { ...target };
-    
+
     for (const key in source) {
+      // SECURITY: Protect against prototype pollution
+      // Block dangerous keys that could modify Object.prototype
+      if (
+        key === '__proto__' ||
+        key === 'constructor' ||
+        key === 'prototype'
+      ) {
+        if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+          console.warn(`[i18n] Blocked attempt to set dangerous property: ${key}`);
+        }
+        continue;
+      }
+
+      // Only process own properties (not inherited ones)
+      if (!Object.prototype.hasOwnProperty.call(source, key)) {
+        continue;
+      }
+
       if (source[key] !== undefined) {
         if (
           typeof source[key] === 'object' &&
@@ -92,7 +118,7 @@ export function deepMerge<T extends Record<string, any>>(
         }
       }
     }
-    
+
     return result;
   } catch (error) {
     if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {

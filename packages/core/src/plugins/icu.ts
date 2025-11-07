@@ -3,7 +3,7 @@ import type { I18nPlugin, TranslationParams } from '../types';
 export function createICUPlugin(): I18nPlugin {
   return {
     name: 'icu',
-    transform: (key, value, params, locale) => {
+    transform: (_key, value, params, _locale) => {
       // Simple ICU MessageFormat support
       return value.replace(
         /\{([^,}]+)(?:,\s*(plural|select)(?:,([^}]+))?)?\}/g,
@@ -30,7 +30,7 @@ export function createICUPlugin(): I18nPlugin {
 function handlePlural(
   count: number,
   options: string,
-  params: TranslationParams
+  _params: TranslationParams
 ): string {
   const matches = options.match(/(\w+)\s*\{([^}]+)\}/g);
   if (!matches) return String(count);
@@ -55,7 +55,7 @@ function handlePlural(
 function handleSelect(
   value: string,
   options: string,
-  params: TranslationParams
+  _params: TranslationParams
 ): string {
   const matches = options.match(/(\w+)\s*\{([^}]+)\}/g);
   if (!matches) return value;
