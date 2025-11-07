@@ -26,11 +26,20 @@ export function optimizeBundle(
     if (asset.type === 'asset' && fileName.includes('locales') && fileName.endsWith('.json')) {
       try {
         const content = asset.source.toString();
-        const translations = JSON.parse(content);
-        
+
+        let translations;
+        try {
+          translations = JSON.parse(content);
+        } catch (parseError) {
+          console.error(
+            `Failed to parse JSON in ${fileName}: ${parseError instanceof Error ? parseError.message : String(parseError)}`
+          );
+          continue; // Skip this file and continue with others
+        }
+
         // Filter out unused translations
         const optimized = filterTranslations(translations, usedKeys);
-        
+
         // Update the asset with optimized content
         asset.source = JSON.stringify(optimized);
       } catch (error) {

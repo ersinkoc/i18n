@@ -23,7 +23,15 @@ export async function generateTypes(options: GenerateTypesOptions): Promise<void
     // Use the first file (typically 'en.json') as the source of truth
     const sourceFile = files.find(f => f.includes('en.json')) || files[0];
     const content = await fs.readFile(sourceFile, 'utf-8');
-    const translations = JSON.parse(content);
+
+    let translations;
+    try {
+      translations = JSON.parse(content);
+    } catch (parseError) {
+      throw new Error(
+        `Failed to parse JSON in ${sourceFile}: ${parseError instanceof Error ? parseError.message : String(parseError)}`
+      );
+    }
     
     // Generate TypeScript interface
     const types = generateInterface(translations);

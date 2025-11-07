@@ -94,7 +94,28 @@ export function createI18n<TMessages extends Messages = Messages>(
     locale: LocaleCode = currentLocale
   ): string {
     try {
-      const cacheKey = `${locale}:${key}:${JSON.stringify(params || {})}`;
+      // Generate cache key with deterministic param serialization
+      // Sort keys to ensure consistent caching regardless of property order
+      let paramKey = '';
+      if (params && Object.keys(params).length > 0) {
+        try {
+          const sortedKeys = Object.keys(params).sort();
+          const sortedParams: Record<string, unknown> = {};
+          for (const k of sortedKeys) {
+            sortedParams[k] = params[k];
+          }
+          paramKey = JSON.stringify(sortedParams);
+        } catch (stringifyError) {
+          // Handle circular references or other JSON.stringify errors
+          // Use a simpler key based on param keys only
+          if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+            console.warn('[i18n] Failed to serialize params for caching, using fallback key');
+          }
+          paramKey = Object.keys(params).sort().join(',');
+        }
+      }
+
+      const cacheKey = `${locale}:${key}:${paramKey}`;
       const cached = translationCache.get(cacheKey);
       if (cached) return cached;
       
@@ -165,7 +186,16 @@ export function createI18n<TMessages extends Messages = Messages>(
     if (!locale || typeof locale !== 'string') {
       throw new Error('[i18n] Invalid locale provided');
     }
-    
+
+    // Warn if locale doesn't exist in messages
+    if (!messages[locale]) {
+      if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+        console.warn(
+          `[i18n] Locale '${locale}' not found in messages. Available locales: ${Object.keys(messages).join(', ')}`
+        );
+      }
+    }
+
     if (locale !== currentLocale) {
       currentLocale = locale;
       translationCache.clear();
@@ -264,12 +294,18 @@ export function createI18n<TMessages extends Messages = Messages>(
   }
   
   function formatNumber(value: number, format?: string): string {
-    const formatter = formatters.get('number')!;
+    const formatter = formatters.get('number');
+    if (!formatter) {
+      throw new Error('[i18n] Number formatter not available. Please add a plugin that provides number formatting.');
+    }
     return formatter(value, format, currentLocale);
   }
-  
+
   function formatDate(value: Date, format?: string): string {
-    const formatter = formatters.get('date')!;
+    const formatter = formatters.get('date');
+    if (!formatter) {
+      throw new Error('[i18n] Date formatter not available. Please add a plugin that provides date formatting.');
+    }
     return formatter(value, format, currentLocale);
   }
   

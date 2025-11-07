@@ -25,7 +25,19 @@ export async function compile(options: CompileOptions) {
     for (const file of files) {
       const locale = path.basename(file, '.json');
       const content = await fs.readFile(file, 'utf-8');
-      const translations = JSON.parse(content);
+
+      let translations;
+      try {
+        translations = JSON.parse(content);
+      } catch (parseError) {
+        spinner.fail(`Failed to parse ${file}`);
+        console.error(
+          colors.red(
+            `  JSON parse error: ${parseError instanceof Error ? parseError.message : String(parseError)}`
+          )
+        );
+        process.exit(1);
+      }
       
       // Optimize translations (remove empty values, minimize structure)
       const optimized = optimizeTranslations(translations);
@@ -69,7 +81,10 @@ export async function compile(options: CompileOptions) {
     // Calculate size reduction
     const originalSize = await calculateDirSize(options.input);
     const compiledSize = await calculateDirSize(options.output);
-    const reduction = ((originalSize - compiledSize) / originalSize * 100).toFixed(1);
+    const reduction =
+      originalSize > 0
+        ? ((originalSize - compiledSize) / originalSize * 100).toFixed(1)
+        : '0.0';
     
     console.log('\n' + colors.green('✨ Compilation complete!'));
     console.log(colors.gray(`Files compiled: ${compiledCount}`));

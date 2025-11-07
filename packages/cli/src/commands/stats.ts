@@ -35,7 +35,19 @@ export async function stats(options: StatsOptions) {
     for (const file of files) {
       const locale = path.basename(file, '.json');
       const content = await fs.readFile(file, 'utf-8');
-      const translations = JSON.parse(content);
+
+      let translations;
+      try {
+        translations = JSON.parse(content);
+      } catch (parseError) {
+        spinner.fail(`Failed to parse ${file}`);
+        console.error(
+          colors.red(
+            `  JSON parse error: ${parseError instanceof Error ? parseError.message : String(parseError)}`
+          )
+        );
+        process.exit(1);
+      }
       
       const stats = calculateStats(translations);
       maxKeys = Math.max(maxKeys, stats.keys);

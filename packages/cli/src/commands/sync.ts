@@ -17,7 +17,19 @@ export async function sync(options: SyncOptions) {
     // Load source translations
     const sourceFile = path.join(options.path, `${options.source}.json`);
     const sourceContent = await fs.readFile(sourceFile, 'utf-8');
-    const sourceTranslations = JSON.parse(sourceContent);
+
+    let sourceTranslations;
+    try {
+      sourceTranslations = JSON.parse(sourceContent);
+    } catch (parseError) {
+      spinner.fail(`Failed to parse source file: ${sourceFile}`);
+      console.error(
+        colors.red(
+          `  JSON parse error: ${parseError instanceof Error ? parseError.message : String(parseError)}`
+        )
+      );
+      process.exit(1);
+    }
     
     // Get target locales
     let targetLocales: string[] = [];
@@ -42,9 +54,20 @@ export async function sync(options: SyncOptions) {
       // Load existing target translations
       try {
         const content = await fs.readFile(targetFile, 'utf-8');
-        targetTranslations = JSON.parse(content);
-      } catch {
+        try {
+          targetTranslations = JSON.parse(content);
+        } catch (parseError) {
+          spinner.fail(`Failed to parse target file: ${targetFile}`);
+          console.error(
+            colors.red(
+              `  JSON parse error: ${parseError instanceof Error ? parseError.message : String(parseError)}`
+            )
+          );
+          process.exit(1);
+        }
+      } catch (readError) {
         // File doesn't exist, will create new
+        // This is expected for new locales
       }
       
       // Sync translations
