@@ -158,19 +158,44 @@ export function getNestedValue<T>(
   }
 }
 
-export function createCache<T>(): {
+export interface CacheOptions {
+  maxSize?: number;
+}
+
+export function createCache<T>(options?: CacheOptions): {
   get: (key: string) => T | undefined;
   set: (key: string, value: T) => void;
   clear: () => void;
+  size: () => number;
 } {
   const cache = new Map<string, T>();
-  
+  const maxSize = options?.maxSize ?? 1000; // Default to 1000 entries
+
   return {
-    get: (key: string) => cache.get(key),
+    get: (key: string) => {
+      const value = cache.get(key);
+      if (value !== undefined) {
+        // LRU: Move to end by deleting and re-adding
+        cache.delete(key);
+        cache.set(key, value);
+      }
+      return value;
+    },
     set: (key: string, value: T) => {
+      // If key exists, delete it first (will re-add at end)
+      if (cache.has(key)) {
+        cache.delete(key);
+      } else if (cache.size >= maxSize) {
+        // Remove oldest entry (first entry in Map)
+        const firstKey = cache.keys().next().value;
+        if (firstKey !== undefined) {
+          cache.delete(firstKey);
+        }
+      }
       cache.set(key, value);
     },
     clear: () => cache.clear(),
+    size: () => cache.size,
   };
 }
 

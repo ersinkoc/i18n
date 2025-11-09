@@ -23,16 +23,46 @@ export function createI18n<TMessages extends Messages = Messages>(
   if (!config) {
     throw new Error('[i18n] Configuration is required');
   }
-  if (!config.locale) {
-    throw new Error('[i18n] Locale is required');
+  if (!config.locale || typeof config.locale !== 'string' || config.locale.trim() === '') {
+    throw new Error('[i18n] Locale must be a non-empty string');
   }
   if (!config.messages) {
     throw new Error('[i18n] Messages are required');
   }
+  if (typeof config.messages !== 'object' || Array.isArray(config.messages) || config.messages === null) {
+    throw new Error('[i18n] Messages must be an object');
+  }
+  // Warn if messages is empty but allow it for graceful degradation
+  const hasMessages = Object.keys(config.messages).length > 0;
+  if (!hasMessages) {
+    if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+      console.warn('[i18n] Messages object is empty - all translations will return keys');
+    }
+  }
+  // Validate that the current locale exists in messages, unless a fallback is provided or messages is empty
+  if (hasMessages && !(config.locale in config.messages) && !config.fallbackLocale) {
+    const availableLocales = Object.keys(config.messages).join(', ');
+    throw new Error(`[i18n] Locale '${config.locale}' not found in messages and no fallback locale provided. Available locales: ${availableLocales}`);
+  }
+  // Warn if current locale doesn't exist but fallback does
+  if (!(config.locale in config.messages) && config.fallbackLocale) {
+    if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+      const availableLocales = Object.keys(config.messages).join(', ');
+      console.warn(`[i18n] Locale '${config.locale}' not found in messages, will use fallback locale '${config.fallbackLocale}'. Available locales: ${availableLocales}`);
+    }
+  }
+  // Validate fallback locale if provided
+  if (config.fallbackLocale && !(config.fallbackLocale in config.messages)) {
+    const availableLocales = Object.keys(config.messages).join(', ');
+    if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+      console.warn(`[i18n] Fallback locale '${config.fallbackLocale}' not found in messages. Available locales: ${availableLocales}`);
+    }
+  }
 
   let currentLocale = config.locale;
   const fallbackLocale = config.fallbackLocale;
-  const messages = { ...config.messages };
+  // Deep copy messages to prevent mutations to the original config
+  const messages = structuredClone(config.messages);
   const plugins = [...(config.plugins || [])];
   const listeners = new Set<(locale: LocaleCode) => void>();
   const translationCache = createCache<string>();
@@ -62,6 +92,9 @@ export function createI18n<TMessages extends Messages = Messages>(
         currency,
       }).format(value);
     } catch (error) {
+      if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+        console.error(`[i18n] Currency formatter error for currency '${currency}':`, error);
+      }
       return `${currency} ${value}`;
     }
   });
@@ -310,6 +343,15 @@ export function createI18n<TMessages extends Messages = Messages>(
   }
   
   function formatRelativeTime(value: Date, baseDate: Date = new Date()): string {
+    // Validate that value is a valid Date
+    if (!(value instanceof Date) || isNaN(value.getTime())) {
+      throw new Error('[i18n] Invalid date provided to formatRelativeTime');
+    }
+    // Validate that baseDate is a valid Date
+    if (!(baseDate instanceof Date) || isNaN(baseDate.getTime())) {
+      throw new Error('[i18n] Invalid base date provided to formatRelativeTime');
+    }
+
     const diffInSeconds = Math.floor((value.getTime() - baseDate.getTime()) / 1000);
     const rtf = new Intl.RelativeTimeFormat(currentLocale, { numeric: 'auto' });
     
