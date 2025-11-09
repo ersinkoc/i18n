@@ -52,8 +52,8 @@ export function interpolate(
         }
         
         if (value instanceof Date) {
-          // Use ISO date format for consistent formatting across all locales
-          return value.toLocaleDateString('en-US', {
+          // Use the provided locale parameter for locale-aware formatting
+          return value.toLocaleDateString(locale || 'en-US', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
