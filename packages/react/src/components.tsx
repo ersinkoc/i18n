@@ -168,7 +168,7 @@ export function NumberFormat({ value, format, as: Component = 'span', className,
 }
 
 export interface DateFormatProps {
-  value: Date | any;
+  value: Date | string | number;
   format?: string;
   as?: keyof JSX.IntrinsicElements;
   className?: string;
@@ -207,8 +207,8 @@ export function DateFormat({ value, format, as: Component = 'span', className, .
 }
 
 export interface RelativeTimeProps {
-  value: Date | any;
-  baseDate?: Date | any;
+  value: Date | string | number;
+  baseDate?: Date | string | number;
   as?: keyof JSX.IntrinsicElements;
   className?: string;
 }
