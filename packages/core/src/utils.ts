@@ -103,18 +103,19 @@ export function deepMerge<T extends Record<string, any>>(
       }
 
       if (source[key] !== undefined) {
+        const value = source[key];
         if (
-          typeof source[key] === 'object' &&
-          source[key] !== null &&
-          !Array.isArray(source[key]) &&
-          !(source[key] as any instanceof Date)
+          typeof value === 'object' &&
+          value !== null &&
+          !Array.isArray(value) &&
+          !((value as object) instanceof Date)
         ) {
           result[key] = deepMerge(
             result[key] || ({} as any),
-            source[key] as any
+            value as any
           ) as any;
         } else {
-          result[key] = source[key] as any;
+          result[key] = value as any;
         }
       }
     }

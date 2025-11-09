@@ -6,7 +6,7 @@ const COMPONENT_KEY_REGEX = /<(?:T|Trans)\s+id\s*=\s*['"`]([^'"`]+)['"`]/g;
 
 export function transformCode(
   code: string,
-  id: string,
+  _id: string,
   options: TransformOptions
 ): { code: string; map?: any } | null {
   const usedKeys = new Set<string>();
@@ -39,7 +39,7 @@ export function transformCode(
     // This is a simplified example - in reality, we'd need to load actual translations
     code.replace(
       /\.t\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/g,
-      (match, key, offset) => {
+      (match, _key, _offset) => {
         // Only inline if it's a simple key without parameters
         if (!match.includes(',')) {
           // Mark as transformed

@@ -117,7 +117,7 @@ function escapeString(str: string): string {
     .replace(/\t/g, '\\t');
 }
 
-// Helper type for translations with parameters
-const helperTypes = `
-type TranslationWithParams<T extends string, P> = T;
-`;
+// Helper type for translations with parameters (currently unused, may be used in future)
+// const helperTypes = `
+// type TranslationWithParams<T extends string, P> = T;
+// `;

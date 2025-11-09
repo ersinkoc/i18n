@@ -5,12 +5,12 @@ const KEY_COMMENT_REGEX = /\/\*\s*@__I18N_KEYS__\s*([^*]+)\s*\*\//g;
 
 export function optimizeBundle(
   bundle: OutputBundle,
-  options: OptimizeOptions
+  _options: OptimizeOptions
 ): void {
   const usedKeys = new Set<string>();
-  
+
   // First pass: collect all used translation keys
-  for (const [fileName, chunk] of Object.entries(bundle)) {
+  for (const [_fileName, chunk] of Object.entries(bundle)) {
     if (chunk.type === 'chunk' && chunk.code) {
       let match;
       while ((match = KEY_COMMENT_REGEX.exec(chunk.code)) !== null) {
@@ -23,7 +23,7 @@ export function optimizeBundle(
   
   // Second pass: optimize translation bundles
   for (const [fileName, asset] of Object.entries(bundle)) {
-    if (asset.type === 'asset' && fileName.includes('locales') && fileName.endsWith('.json')) {
+    if (asset.type === 'asset' && typeof fileName === 'string' && fileName.includes('locales') && fileName.endsWith('.json')) {
       try {
         const content = asset.source.toString();
 
