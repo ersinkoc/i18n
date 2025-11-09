@@ -30,7 +30,15 @@ export function interpolate(
             if (!formatter) {
               return String(value);
             }
-            return formatter(value, key.includes(':') ? key.split(':').slice(1).join(':') : undefined, locale);
+            const formatted = formatter(value, key.includes(':') ? key.split(':').slice(1).join(':') : undefined, locale);
+            // Validate formatter returns a string
+            if (typeof formatted !== 'string') {
+              if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+                console.error(`[i18n] Formatter '${format}' must return a string, got ${typeof formatted}`);
+              }
+              return String(value);
+            }
+            return formatted;
           } catch (error) {
             if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
               console.error(`[i18n] Formatter error for ${format}:`, error);
@@ -103,18 +111,19 @@ export function deepMerge<T extends Record<string, any>>(
       }
 
       if (source[key] !== undefined) {
+        const value = source[key];
         if (
-          typeof source[key] === 'object' &&
-          source[key] !== null &&
-          !Array.isArray(source[key]) &&
-          !(source[key] as any instanceof Date)
+          typeof value === 'object' &&
+          value !== null &&
+          !Array.isArray(value) &&
+          !((value as object) instanceof Date)
         ) {
           result[key] = deepMerge(
             result[key] || ({} as any),
-            source[key] as any
+            value as any
           ) as any;
         } else {
-          result[key] = source[key] as any;
+          result[key] = value as any;
         }
       }
     }
@@ -157,19 +166,44 @@ export function getNestedValue<T>(
   }
 }
 
-export function createCache<T>(): {
+export interface CacheOptions {
+  maxSize?: number;
+}
+
+export function createCache<T>(options?: CacheOptions): {
   get: (key: string) => T | undefined;
   set: (key: string, value: T) => void;
   clear: () => void;
+  size: () => number;
 } {
   const cache = new Map<string, T>();
-  
+  const maxSize = options?.maxSize ?? 1000; // Default to 1000 entries
+
   return {
-    get: (key: string) => cache.get(key),
+    get: (key: string) => {
+      const value = cache.get(key);
+      if (value !== undefined) {
+        // LRU: Move to end by deleting and re-adding
+        cache.delete(key);
+        cache.set(key, value);
+      }
+      return value;
+    },
     set: (key: string, value: T) => {
+      // If key exists, delete it first (will re-add at end)
+      if (cache.has(key)) {
+        cache.delete(key);
+      } else if (cache.size >= maxSize) {
+        // Remove oldest entry (first entry in Map)
+        const firstKey = cache.keys().next().value;
+        if (firstKey !== undefined) {
+          cache.delete(firstKey);
+        }
+      }
       cache.set(key, value);
     },
     clear: () => cache.clear(),
+    size: () => cache.size,
   };
 }
 

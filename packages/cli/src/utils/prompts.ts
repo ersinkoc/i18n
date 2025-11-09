@@ -77,8 +77,8 @@ export class Prompts {
     
     return new Promise((resolve) => {
       let selectedIndex = initial;
-      
-      const onKeypress = (str: string, key: any) => {
+
+      const onKeypress = (_str: string, key: any) => {
         if (key.name === 'up' && selectedIndex > 0) {
           selectedIndex--;
           this.redrawChoices(options.message, choices, selectedIndex);

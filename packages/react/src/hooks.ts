@@ -15,7 +15,7 @@ export function useTranslation<TMessages extends Messages = Messages>(
   namespace?: string
 ): UseTranslationResult<TMessages> {
   const i18n = useI18n<TMessages>();
-  
+
   const t = useCallback<TranslationFunction<TMessages>>(
     (key, ...args) => {
       const fullKey = namespace ? `${namespace}.${String(key)}` : String(key);
@@ -23,23 +23,42 @@ export function useTranslation<TMessages extends Messages = Messages>(
     },
     [i18n, namespace]
   );
-  
+
+  const setLocale = useCallback((locale: string) => {
+    i18n.setLocale(locale);
+  }, [i18n]);
+
+  const formatNumber = useCallback((value: number, format?: string) => {
+    return i18n.formatNumber(value, format);
+  }, [i18n]);
+
+  const formatDate = useCallback((value: Date, format?: string) => {
+    return i18n.formatDate(value, format);
+  }, [i18n]);
+
+  const formatRelativeTime = useCallback((value: Date, baseDate?: Date) => {
+    return i18n.formatRelativeTime(value, baseDate);
+  }, [i18n]);
+
   return useMemo(
     () => ({
       t,
       locale: i18n.locale,
-      setLocale: i18n.setLocale.bind(i18n),
-      formatNumber: i18n.formatNumber.bind(i18n),
-      formatDate: i18n.formatDate.bind(i18n),
-      formatRelativeTime: i18n.formatRelativeTime.bind(i18n),
+      setLocale,
+      formatNumber,
+      formatDate,
+      formatRelativeTime,
     }),
-    [i18n, t, i18n.locale]
+    [t, i18n.locale, setLocale, formatNumber, formatDate, formatRelativeTime]
   );
 }
 
 export function useLocale(): [string, (locale: string) => void] {
   const i18n = useI18n();
-  return [i18n.locale, i18n.setLocale.bind(i18n)];
+  const setLocale = useCallback((locale: string) => {
+    i18n.setLocale(locale);
+  }, [i18n]);
+  return [i18n.locale, setLocale];
 }
 
 export function useHasTranslation<TMessages extends Messages = Messages>() {

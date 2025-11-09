@@ -794,7 +794,7 @@ describe('Line-by-Line Test Coverage - Core Package', () => {
       });
       
       expect(() => i18n.t('test')).not.toThrow();
-      expect(errorSpy).toHaveBeenCalledWith('[i18n] Plugin faulty transform error:', expect.any(Error));
+      expect(errorSpy).toHaveBeenCalledWith('[i18n] Plugin faulty transform:', expect.any(Error));
       
       errorSpy.mockRestore();
     });
@@ -986,7 +986,7 @@ describe('Line-by-Line Test Coverage - Core Package', () => {
       i18n.subscribe(faultyListener);
       
       expect(() => i18n.setLocale('fr')).not.toThrow();
-      expect(errorSpy).toHaveBeenCalledWith('[i18n] Locale change listener error:', expect.any(Error));
+      expect(errorSpy).toHaveBeenCalledWith('[i18n] Locale change listener:', expect.any(Error));
       
       errorSpy.mockRestore();
     });
@@ -1107,7 +1107,7 @@ describe('Line-by-Line Test Coverage - Core Package', () => {
       });
       
       expect(() => i18n.addMessages('en', { test: 'Test' })).not.toThrow();
-      expect(errorSpy).toHaveBeenCalledWith('[i18n] Plugin faulty-beforeload beforeLoad error:', expect.any(Error));
+      expect(errorSpy).toHaveBeenCalledWith('[i18n] Plugin faulty-beforeload beforeLoad:', expect.any(Error));
       
       errorSpy.mockRestore();
     });
@@ -1172,7 +1172,7 @@ describe('Line-by-Line Test Coverage - Core Package', () => {
       });
       
       expect(() => i18n.addMessages('en', { test: 'Test' })).not.toThrow();
-      expect(errorSpy).toHaveBeenCalledWith('[i18n] Plugin faulty-afterload afterLoad error:', expect.any(Error));
+      expect(errorSpy).toHaveBeenCalledWith('[i18n] Plugin faulty-afterload afterLoad:', expect.any(Error));
       
       errorSpy.mockRestore();
     });

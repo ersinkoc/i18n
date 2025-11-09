@@ -29,7 +29,7 @@ export function T<
     const translatedText = values ? (t as any)(id, values) : (t as any)(id);
     
     return (
-      <Component className={className} {...props}>
+      <Component {...props} className={className}>
         {translatedText}
       </Component>
     );
@@ -38,7 +38,7 @@ export function T<
       console.error('[i18n] T component translation error:', error);
     }
     return (
-      <Component className={className} {...props}>
+      <Component {...props} className={className}>
         {String(id)}
       </Component>
     );
@@ -63,33 +63,42 @@ export function Trans<
   const { t } = useTranslation<TMessages>();
   
   const translation = values ? (t as any)(id, values) : (t as any)(id);
-  
+
   // Parse the translation and replace component placeholders
-  function parseTranslation(text: string): React.ReactNode[] {
+  function parseTranslation(text: string, depth: number = 0): React.ReactNode[] {
+    const MAX_DEPTH = 10; // Prevent stack overflow from malicious or malformed translations
+
+    if (depth > MAX_DEPTH) {
+      if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+        console.error('[i18n] Max nesting depth exceeded in Trans component');
+      }
+      return [text];
+    }
+
     const result: React.ReactNode[] = [];
     let lastIndex = 0;
-    
+
     // Find all component tags
     const regex = /<(\d+)>(.*?)<\/\1>/g;
     let match;
-    
+
     while ((match = regex.exec(text)) !== null) {
       const [fullMatch, componentIndex, innerContent] = match;
       const startIndex = match.index;
-      
+
       // Add text before the component
       if (startIndex > lastIndex) {
         result.push(text.slice(lastIndex, startIndex));
       }
-      
-      // Process the component
-      const Component = components[componentIndex];
-      if (Component) {
-        // Recursively parse inner content for nested components
-        const children = parseTranslation(innerContent);
+
+      // Process the component (renamed to avoid shadowing)
+      const ChildComponent = components[componentIndex];
+      if (ChildComponent) {
+        // Recursively parse inner content for nested components with depth tracking
+        const children = parseTranslation(innerContent, depth + 1);
         result.push(
           React.cloneElement(
-            Component,
+            ChildComponent,
             { key: `component-${componentIndex}-${startIndex}` },
             children.length === 1 && typeof children[0] === 'string' ? children[0] : children
           )
@@ -98,22 +107,22 @@ export function Trans<
         // If component not found, keep the original text
         result.push(fullMatch);
       }
-      
+
       lastIndex = startIndex + fullMatch.length;
     }
-    
+
     // Add any remaining text
     if (lastIndex < text.length) {
       result.push(text.slice(lastIndex));
     }
-    
+
     return result;
   }
   
   const elements = parseTranslation(translation);
   
   return (
-    <Component className={className} {...props}>
+    <Component {...props} className={className}>
       {elements}
     </Component>
   );
@@ -134,15 +143,15 @@ export function NumberFormat({ value, format, as: Component = 'span', className,
       console.error('[i18n] NumberFormat component requires a valid number');
     }
     return (
-      <Component className={className} {...props}>
+      <Component {...props} className={className}>
         {String(value)}
       </Component>
     );
   }
-  
+
   try {
     return (
-      <Component className={className} {...props}>
+      <Component {...props} className={className}>
         {formatNumber(value, format)}
       </Component>
     );
@@ -151,7 +160,7 @@ export function NumberFormat({ value, format, as: Component = 'span', className,
       console.error('[i18n] NumberFormat component error:', error);
     }
     return (
-      <Component className={className} {...props}>
+      <Component {...props} className={className}>
         {String(value)}
       </Component>
     );
@@ -173,15 +182,15 @@ export function DateFormat({ value, format, as: Component = 'span', className, .
       console.error('[i18n] DateFormat component requires a valid Date object');
     }
     return (
-      <Component className={className} {...props}>
+      <Component {...props} className={className}>
         {String(value)}
       </Component>
     );
   }
-  
+
   try {
     return (
-      <Component className={className} {...props}>
+      <Component {...props} className={className}>
         {formatDate(value, format)}
       </Component>
     );
@@ -190,8 +199,8 @@ export function DateFormat({ value, format, as: Component = 'span', className, .
       console.error('[i18n] DateFormat component error:', error);
     }
     return (
-      <Component className={className} {...props}>
-        {String(value)}
+      <Component {...props} className={className}>
+        {value instanceof Date ? value.toLocaleDateString() : String(value)}
       </Component>
     );
   }
@@ -212,26 +221,26 @@ export function RelativeTime({ value, baseDate, as: Component = 'span', classNam
       console.error('[i18n] RelativeTime component requires a valid Date object for value');
     }
     return (
-      <Component className={className} {...props}>
+      <Component {...props} className={className}>
         {String(value)}
       </Component>
     );
   }
-  
+
   if (baseDate !== undefined && (!(baseDate instanceof Date) || isNaN((baseDate as Date).getTime()))) {
     if (process.env.NODE_ENV !== 'production') {
       console.error('[i18n] RelativeTime component requires a valid Date object for baseDate');
     }
     return (
-      <Component className={className} {...props}>
+      <Component {...props} className={className}>
         {String(value)}
       </Component>
     );
   }
-  
+
   try {
     return (
-      <Component className={className} {...props}>
+      <Component {...props} className={className}>
         {formatRelativeTime(value, baseDate)}
       </Component>
     );
@@ -240,8 +249,8 @@ export function RelativeTime({ value, baseDate, as: Component = 'span', classNam
       console.error('[i18n] RelativeTime component error:', error);
     }
     return (
-      <Component className={className} {...props}>
-        {String(value)}
+      <Component {...props} className={className}>
+        {value instanceof Date ? value.toLocaleDateString() : String(value)}
       </Component>
     );
   }

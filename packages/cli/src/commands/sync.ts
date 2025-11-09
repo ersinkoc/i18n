@@ -43,7 +43,7 @@ export async function sync(options: SyncOptions) {
       targetLocales = localeFiles.map(f => path.basename(f, '.json'));
     }
     
-    spinner.text = `Syncing to ${targetLocales.length} locales`;
+    spinner.set(`Syncing to ${targetLocales.length} locales`);
     
     const syncResults: Record<string, { added: number; updated: number }> = {};
     

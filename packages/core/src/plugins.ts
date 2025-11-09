@@ -1,18 +1,11 @@
 import type { I18nPlugin } from './types';
+import { createMarkdownPlugin } from './plugins/markdown';
 
 /**
  * Markdown plugin for basic markdown syntax transformation
+ * This version uses proper XSS protection
  */
-export const markdownPlugin: I18nPlugin = {
-  name: 'markdown',
-  transform: (_key, value, _params, _locale) => {
-    return value
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`(.*?)`/g, '<code>$1</code>')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-  },
-};
+export const markdownPlugin: I18nPlugin = createMarkdownPlugin();
 
 /**
  * ICU plugin for basic ICU message format support
@@ -74,22 +67,25 @@ export const icuPlugin: I18nPlugin = {
     
     // Handle basic ICU select patterns
     if (_params && 'gender' in _params) {
-      const gender = _params.gender as string;
-      
+      const gender = String(_params.gender);
+
       // Pattern: {gender, select, male {He} female {She} other {They}}
       const selectInfo = parseICUBalanced(result, /\{gender,\s*select,\s*/);
       if (selectInfo) {
         const rules = selectInfo.content;
-        const genderMatch = rules.match(new RegExp(`${gender}\\s*\\{([^}]+)\\}`));
+        // Escape special regex characters to prevent ReDoS
+        const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const safeGender = escapeRegex(gender);
+        const genderMatch = rules.match(new RegExp(`${safeGender}\\s*\\{([^}]+)\\}`));
         const otherMatch = rules.match(/other\s*\{([^}]+)\}/);
-        
+
         let replacement = selectInfo.match;
         if (genderMatch) {
           replacement = genderMatch[1];
         } else if (otherMatch) {
           replacement = otherMatch[1];
         }
-        
+
         result = result.replace(selectInfo.match, replacement);
       }
     }

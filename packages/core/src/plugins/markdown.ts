@@ -37,23 +37,52 @@ export function createMarkdownPlugin(): I18nPlugin {
     name: 'markdown',
     transform: (_key, value, _params, _locale) => {
       // Simple markdown transformations with XSS protection
-      // First, escape the base text
-      let result = escapeHtml(value);
+      // We need to be careful not to double-escape
+      let result = value;
 
-      // Then apply markdown transformations on the escaped text
-      // **bold** -> <strong>text</strong>
-      result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-      // *italic* -> <em>text</em>
-      result = result.replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-      // `code` -> <code>text</code>
-      result = result.replace(/`(.*?)`/g, '<code>$1</code>');
+      // Store placeholders for processed markdown to avoid conflicts
+      const placeholders: string[] = [];
+      let placeholderIndex = 0;
 
       // [text](url) -> <a href="url">text</a>
       result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, href) => {
-        return `<a href="${sanitizeHref(href)}">${text}</a>`;
+        const placeholder = `__MARKDOWN_PLACEHOLDER_${placeholderIndex}__`;
+        placeholders[placeholderIndex] = `<a href="${sanitizeHref(href)}">${escapeHtml(text)}</a>`;
+        placeholderIndex++;
+        return placeholder;
       });
+
+      // **bold** -> <strong>text</strong>
+      result = result.replace(/\*\*(.*?)\*\*/g, (_, text) => {
+        const placeholder = `__MARKDOWN_PLACEHOLDER_${placeholderIndex}__`;
+        placeholders[placeholderIndex] = `<strong>${escapeHtml(text)}</strong>`;
+        placeholderIndex++;
+        return placeholder;
+      });
+
+      // *italic* -> <em>text</em>
+      result = result.replace(/\*(.*?)\*/g, (_, text) => {
+        const placeholder = `__MARKDOWN_PLACEHOLDER_${placeholderIndex}__`;
+        placeholders[placeholderIndex] = `<em>${escapeHtml(text)}</em>`;
+        placeholderIndex++;
+        return placeholder;
+      });
+
+      // `code` -> <code>text</code>
+      result = result.replace(/`(.*?)`/g, (_, text) => {
+        const placeholder = `__MARKDOWN_PLACEHOLDER_${placeholderIndex}__`;
+        placeholders[placeholderIndex] = `<code>${escapeHtml(text)}</code>`;
+        placeholderIndex++;
+        return placeholder;
+      });
+
+      // Escape any remaining text that wasn't part of markdown
+      result = escapeHtml(result);
+
+      // Restore placeholders
+      for (let i = 0; i < placeholders.length; i++) {
+        result = result.replace(`__MARKDOWN_PLACEHOLDER_${i}__`, placeholders[i]);
+      }
 
       return result;
     },

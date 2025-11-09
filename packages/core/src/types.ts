@@ -41,6 +41,7 @@ export interface I18nConfig<TMessages extends Messages = Messages> {
     number?: Record<string, Intl.NumberFormatOptions>;
     date?: Record<string, Intl.DateTimeFormatOptions>;
   };
+  onError?: (error: Error, context: string) => void;
 }
 
 export interface I18nInstance<TMessages extends Messages = Messages> {

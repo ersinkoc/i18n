@@ -37,7 +37,7 @@ export async function extract(options: ExtractOptions) {
       }
     }
     
-    spinner.text = `Found ${keys.size} translation keys`;
+    spinner.set(`Found ${keys.size} translation keys`);
     
     // Create output directory
     await fs.mkdir(options.output, { recursive: true });

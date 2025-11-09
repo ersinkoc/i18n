@@ -37,7 +37,8 @@ describe('Markdown Plugin', () => {
     });
 
     const result = i18n.t('link');
-    expect(result).toBe('Visit <a href="https://google.com">Google</a> for search');
+    // Note: The secure markdown plugin escapes forward slashes for XSS protection
+    expect(result).toBe('Visit <a href="https:&#x2F;&#x2F;google.com">Google</a> for search');
   });
 });
 
