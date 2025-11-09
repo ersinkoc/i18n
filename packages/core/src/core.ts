@@ -66,7 +66,24 @@ export function createI18n<TMessages extends Messages = Messages>(
   const plugins = [...(config.plugins || [])];
   const listeners = new Set<(locale: LocaleCode) => void>();
   const translationCache = createCache<string>();
-  
+
+  // Helper function for consistent error handling
+  const handleError = (error: unknown, context: string): void => {
+    const err = error instanceof Error ? error : new Error(String(error));
+    // Call user-provided error handler in production
+    if (config.onError) {
+      try {
+        config.onError(err, context);
+      } catch {
+        // Silently fail if error handler itself errors
+      }
+    }
+    // Log in development
+    if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+      console.error(`[i18n] ${context}:`, err);
+    }
+  };
+
   const formatters = new Map<string, (value: TranslationValue, format?: string, locale?: string) => string>();
   
   // Built-in formatters
@@ -92,9 +109,7 @@ export function createI18n<TMessages extends Messages = Messages>(
         currency,
       }).format(value);
     } catch (error) {
-      if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
-        console.error(`[i18n] Currency formatter error for currency '${currency}':`, error);
-      }
+      handleError(error, `Currency formatter error for currency '${currency}'`);
       return `${currency} ${value}`;
     }
   });
@@ -130,21 +145,31 @@ export function createI18n<TMessages extends Messages = Messages>(
       // Generate cache key with deterministic param serialization
       // Sort keys to ensure consistent caching regardless of property order
       let paramKey = '';
-      if (params && Object.keys(params).length > 0) {
-        try {
-          const sortedKeys = Object.keys(params).sort();
-          const sortedParams: Record<string, unknown> = {};
-          for (const k of sortedKeys) {
-            sortedParams[k] = params[k];
+      if (params) {
+        const paramKeys = Object.keys(params);
+        if (paramKeys.length > 0) {
+          try {
+            // Fast path for single parameter
+            if (paramKeys.length === 1) {
+              const key = paramKeys[0];
+              paramKey = `${key}:${JSON.stringify(params[key])}`;
+            } else {
+              // Sort only when multiple parameters exist
+              const sortedKeys = paramKeys.sort();
+              const sortedParams: Record<string, unknown> = {};
+              for (const k of sortedKeys) {
+                sortedParams[k] = params[k];
+              }
+              paramKey = JSON.stringify(sortedParams);
+            }
+          } catch (stringifyError) {
+            // Handle circular references or other JSON.stringify errors
+            // Use a simpler key based on param keys only
+            if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+              console.warn('[i18n] Failed to serialize params for caching, using fallback key');
+            }
+            paramKey = paramKeys.sort().join(',');
           }
-          paramKey = JSON.stringify(sortedParams);
-        } catch (stringifyError) {
-          // Handle circular references or other JSON.stringify errors
-          // Use a simpler key based on param keys only
-          if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
-            console.warn('[i18n] Failed to serialize params for caching, using fallback key');
-          }
-          paramKey = Object.keys(params).sort().join(',');
         }
       }
 
@@ -188,11 +213,19 @@ export function createI18n<TMessages extends Messages = Messages>(
       for (const plugin of plugins) {
         if (plugin.transform) {
           try {
-            result = plugin.transform(key as keyof TMessages, result, params || {}, locale);
-          } catch (error) {
-            if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
-              console.error(`[i18n] Plugin ${plugin.name} transform error:`, error);
+            const transformed = plugin.transform(key as keyof TMessages, result, params || {}, locale);
+            // Validate plugin returns a string
+            if (typeof transformed !== 'string') {
+              handleError(
+                new Error(`Plugin transform must return a string, got ${typeof transformed}`),
+                `Plugin ${plugin.name} transform validation`
+              );
+              // Skip invalid transformation
+              continue;
             }
+            result = transformed;
+          } catch (error) {
+            handleError(error, `Plugin ${plugin.name} transform`);
           }
         }
       }
@@ -203,9 +236,7 @@ export function createI18n<TMessages extends Messages = Messages>(
       translationCache.set(cacheKey, result);
       return result;
     } catch (error) {
-      if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
-        console.error(`[i18n] Translation error for key ${key}:`, error);
-      }
+      handleError(error, `Translation error for key ${key}`);
       return key;
     }
   }
@@ -236,9 +267,7 @@ export function createI18n<TMessages extends Messages = Messages>(
         try {
           listener(locale);
         } catch (error) {
-          if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
-            console.error('[i18n] Locale change listener error:', error);
-          }
+          handleError(error, 'Locale change listener');
         }
       });
     }
@@ -263,11 +292,19 @@ export function createI18n<TMessages extends Messages = Messages>(
       for (const plugin of plugins) {
         if (plugin.beforeLoad) {
           try {
-            processedMessages = plugin.beforeLoad(locale, processedMessages as TMessages) as Partial<TMessages>;
-          } catch (error) {
-            if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
-              console.error(`[i18n] Plugin ${plugin.name} beforeLoad error:`, error);
+            const result = plugin.beforeLoad(locale, processedMessages as TMessages);
+            // Validate plugin returns an object
+            if (!result || typeof result !== 'object' || Array.isArray(result)) {
+              handleError(
+                new Error(`Plugin beforeLoad must return an object, got ${typeof result}`),
+                `Plugin ${plugin.name} beforeLoad validation`
+              );
+              // Skip invalid transformation
+              continue;
             }
+            processedMessages = result as Partial<TMessages>;
+          } catch (error) {
+            handleError(error, `Plugin ${plugin.name} beforeLoad`);
           }
         }
       }
@@ -280,18 +317,14 @@ export function createI18n<TMessages extends Messages = Messages>(
           try {
             plugin.afterLoad(locale, messages[locale]);
           } catch (error) {
-            if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
-              console.error(`[i18n] Plugin ${plugin.name} afterLoad error:`, error);
-            }
+            handleError(error, `Plugin ${plugin.name} afterLoad`);
           }
         }
       }
       
       translationCache.clear();
     } catch (error) {
-      if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
-        console.error('[i18n] Error adding messages:', error);
-      }
+      handleError(error, 'Error adding messages');
       throw error;
     }
   }
@@ -303,9 +336,19 @@ export function createI18n<TMessages extends Messages = Messages>(
   }
   
   function addPlugin(plugin: I18nPlugin<TMessages>): void {
+    // Check for duplicate plugin names
+    const existingIndex = plugins.findIndex(p => p.name === plugin.name);
+    if (existingIndex !== -1) {
+      if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+        console.warn(`[i18n] Plugin '${plugin.name}' already registered. Replacing existing plugin.`);
+      }
+      // Remove existing plugin first
+      plugins.splice(existingIndex, 1);
+    }
+
     plugins.push(plugin);
     if (plugin.format) {
-      formatters.set(plugin.name, (value, format, locale) => 
+      formatters.set(plugin.name, (value, format, locale) =>
         plugin.format!(value, format ?? '', locale ?? currentLocale)
       );
     }

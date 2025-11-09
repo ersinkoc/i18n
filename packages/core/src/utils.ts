@@ -30,7 +30,15 @@ export function interpolate(
             if (!formatter) {
               return String(value);
             }
-            return formatter(value, key.includes(':') ? key.split(':').slice(1).join(':') : undefined, locale);
+            const formatted = formatter(value, key.includes(':') ? key.split(':').slice(1).join(':') : undefined, locale);
+            // Validate formatter returns a string
+            if (typeof formatted !== 'string') {
+              if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+                console.error(`[i18n] Formatter '${format}' must return a string, got ${typeof formatted}`);
+              }
+              return String(value);
+            }
+            return formatted;
           } catch (error) {
             if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
               console.error(`[i18n] Formatter error for ${format}:`, error);
